@@ -1,8 +1,8 @@
 <template>
-	<div class="app">
-		<h1 style="color: black;">Hello, Vue!</h1>
-		<Person></Person>
-	</div>
+	<var-app-bar title="PaleVerge 's Blog" title-position="center" />
+	<md-outlined-button>Back</md-outlined-button>
+	<md-filled-button>Complete</md-filled-button>
+	<Person />
 </template>
 
 <script lang="ts">
@@ -12,14 +12,8 @@ export default {
 	name: "App",
 	components: { Person }
 }
+
 </script>
 
-<style>
-.app {
-	box-shadow: inset 0 0 10px #ae1d5c;
-	background-color: palevioletred;
-	padding: 15px;
-	color: bisque;
-	border-radius: 15px;
-}
-</style>
+
+<style></style>
