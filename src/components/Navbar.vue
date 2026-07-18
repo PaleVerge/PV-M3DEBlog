@@ -4,6 +4,8 @@
     import Article from './Article.vue'
     import Friend from './Friend.vue'
     import Contact from './Contact.vue'
+import Messages from './Messages.vue'
+import Settings from './Settings.vue'
 
     const activeIndex=ref(0);
 
@@ -11,6 +13,19 @@
   const tabsElement = event.target as any
   activeIndex.value = tabsElement.activeTabIndex
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 const currentComponent = computed(() => {
@@ -23,6 +38,10 @@ const currentComponent = computed(() => {
       return Friend 
     case 3:
       return Contact
+    case 4:
+      return Messages
+    case 5:
+      return Settings
     default:
       return Home
   }
@@ -36,13 +55,27 @@ const currentComponent = computed(() => {
         <md-primary-tab >文章</md-primary-tab>
         <md-primary-tab >友情链接</md-primary-tab>
         <md-primary-tab >联系作者</md-primary-tab>
+        <md-primary-tab >留言</md-primary-tab>
+        <md-primary-tab >设置</md-primary-tab>
     </md-tabs>
 
+
+
+
   <div class="content-container">
-      <component :is="currentComponent" />
-  </div>
+        <Transition name="fade" mode="out-in">
+          <component :is="currentComponent" :key="activeIndex" />
+        </Transition>
+    </div>
 </template>
 
 <style scoped>
- 
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
 </style>

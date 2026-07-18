@@ -4,33 +4,7 @@
                 <h3>💻 欢迎来到 M3DEBlog——</h3>
             </md-list-item>
         
-        <md-icon-button  aria-label="Search for Contact">
-        <md-icon>settings</md-icon>
-        </md-icon-button>
-
-        <md-icon-button  aria-label="Search for Contact">
-        <md-icon>delete </md-icon> 
-        </md-icon-button>
-
-        <md-icon-button  aria-label="Search for Contact">
-        <md-icon>add </md-icon> 
-        </md-icon-button>
-
-        <md-icon-button  aria-label="Search for Contact">
-        <md-icon> menu</md-icon> 
-        </md-icon-button>
-
-        <md-icon-button  aria-label="Search for Contact">
-        <md-icon>favorite</md-icon> 
-        </md-icon-button>
-
-        <md-icon-button  aria-label="Search for Contact">
-        <md-icon>search</md-icon>
-        </md-icon-button>
-
-        <md-fab label="回到首行" aria-label="upward">
-            <md-icon slot="icon"> arrow_upward</md-icon>
-        </md-fab>
+        
 
         <divider/>
         <md-list-item>
