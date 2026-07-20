@@ -1,100 +1,340 @@
 :root {
-  --m3-shape-corner-large: 16px;
-  --m3-shape-corner-medium: 12px;
-  --m3-shape-corner-small: 8px;
+  /* MD3 Shape Tokens */
+  --m3-shape-none: 0px;
+  --m3-shape-extra-small: 4px;
+  --m3-shape-small: 8px;
+  --m3-shape-medium: 12px;
+  --m3-shape-large: 16px;
+  --m3-shape-extra-large: 28px;
+  --m3-shape-full: 9999px;
 
-  /* Material Web shape tokens */
-  --md-list-item-container-shape: var(--m3-shape-corner-medium);
-  --md-elevated-card-container-shape: var(--m3-shape-corner-large);
-  --md-fab-container-shape: 16px;
-  --md-filled-text-field-container-shape: var(--m3-shape-corner-small);
-  --md-outlined-text-field-container-shape: var(--m3-shape-corner-small);
-  --md-filled-button-container-shape: var(--m3-shape-corner-small);
-  --md-outlined-button-container-shape: var(--m3-shape-corner-small);
+  /* MD3 Elevation Tokens */
+  --m3-elevation-0: none;
+  --m3-elevation-1: 0px 1px 2px rgba(0,0,0,0.3), 0px 1px 3px 1px rgba(0,0,0,0.15);
+  --m3-elevation-2: 0px 1px 2px rgba(0,0,0,0.3), 0px 2px 6px 2px rgba(0,0,0,0.15);
+  --m3-elevation-3: 0px 4px 8px 3px rgba(0,0,0,0.15), 0px 1px 3px rgba(0,0,0,0.3);
+  --m3-elevation-4: 0px 6px 10px 4px rgba(0,0,0,0.15), 0px 2px 3px rgba(0,0,0,0.3);
+  --m3-elevation-5: 0px 8px 12px 6px rgba(0,0,0,0.15), 0px 4px 4px rgba(0,0,0,0.3);
 
-  /* 自定义基础颜色 */
+  /* Material Web shape overrides */
+  --md-list-item-container-shape: var(--m3-shape-medium);
+  --md-elevated-card-container-shape: var(--m3-shape-large);
+  --md-fab-container-shape: var(--m3-shape-large);
+  --md-filled-text-field-container-shape: var(--m3-shape-extra-small);
+  --md-outlined-text-field-container-shape: var(--m3-shape-extra-small);
+  --md-filled-button-container-shape: var(--m3-shape-full);
+  --md-outlined-button-container-shape: var(--m3-shape-full);
+  --md-filled-tonal-button-container-shape: var(--m3-shape-full);
+  --md-switch-track-shape: var(--m3-shape-full);
+
+  /* MD3 Light Theme - Purple */
   --md-sys-color-primary: #6750A4;
   --md-sys-color-on-primary: #FFFFFF;
   --md-sys-color-primary-container: #EADDFF;
   --md-sys-color-on-primary-container: #21005D;
   --md-sys-color-secondary: #625B71;
   --md-sys-color-on-secondary: #FFFFFF;
+  --md-sys-color-secondary-container: #E8DEF8;
+  --md-sys-color-on-secondary-container: #1D192B;
+  --md-sys-color-tertiary: #7D5260;
+  --md-sys-color-on-tertiary: #FFFFFF;
+  --md-sys-color-tertiary-container: #FFD8E4;
+  --md-sys-color-on-tertiary-container: #31111D;
+  --md-sys-color-error: #B3261E;
+  --md-sys-color-on-error: #FFFFFF;
+  --md-sys-color-error-container: #F9DEDC;
+  --md-sys-color-on-error-container: #410E0B;
   --md-sys-color-surface: #FFFBFE;
   --md-sys-color-on-surface: #1C1B1F;
   --md-sys-color-surface-variant: #E7E0EC;
   --md-sys-color-on-surface-variant: #49454F;
-  --md-sys-color-error: #B3261E;
+  --md-sys-color-surface-container-lowest: #FFFFFF;
+  --md-sys-color-surface-container-low: #F7F2FA;
+  --md-sys-color-surface-container: #F3EDF7;
+  --md-sys-color-surface-container-high: #ECE6F0;
+  --md-sys-color-surface-container-highest: #E6E0E9;
+  --md-sys-color-outline: #79747E;
+  --md-sys-color-outline-variant: #CAC4D0;
+  --md-sys-color-inverse-surface: #313033;
+  --md-sys-color-inverse-on-surface: #F4EFF4;
+  --md-sys-color-inverse-primary: #D0BCFF;
+  --md-sys-color-surface-tint: #6750A4;
 }
 
 .dark {
+  /* MD3 Dark Theme - Purple */
   --md-sys-color-primary: #D0BCFF;
   --md-sys-color-on-primary: #381E72;
   --md-sys-color-primary-container: #4F378B;
   --md-sys-color-on-primary-container: #EADDFF;
   --md-sys-color-secondary: #CCC2DC;
   --md-sys-color-on-secondary: #332D41;
+  --md-sys-color-secondary-container: #4A4458;
+  --md-sys-color-on-secondary-container: #E8DEF8;
+  --md-sys-color-tertiary: #EFB8C8;
+  --md-sys-color-on-tertiary: #492532;
+  --md-sys-color-tertiary-container: #633B48;
+  --md-sys-color-on-tertiary-container: #FFD8E4;
+  --md-sys-color-error: #F2B8B5;
+  --md-sys-color-on-error: #601410;
+  --md-sys-color-error-container: #8C1D18;
+  --md-sys-color-on-error-container: #F9DEDC;
   --md-sys-color-surface: #1C1B1F;
   --md-sys-color-on-surface: #E6E1E5;
   --md-sys-color-surface-variant: #49454F;
   --md-sys-color-on-surface-variant: #CAC4D0;
-  --md-sys-color-error: #F2B8B5;
+  --md-sys-color-surface-container-lowest: #0F0D13;
+  --md-sys-color-surface-container-low: #1D1B20;
+  --md-sys-color-surface-container: #211F26;
+  --md-sys-color-surface-container-high: #2B2930;
+  --md-sys-color-surface-container-highest: #36343B;
+  --md-sys-color-outline: #938F99;
+  --md-sys-color-outline-variant: #49454F;
+  --md-sys-color-inverse-surface: #E6E1E5;
+  --md-sys-color-inverse-on-surface: #313033;
+  --md-sys-color-inverse-primary: #6750A4;
+  --md-sys-color-surface-tint: #D0BCFF;
 
   color-scheme: dark;
 }
 
+* {
+  box-sizing: border-box;
+}
+
 body {
   margin: 0;
-  font-family: 'Roboto', sans-serif;
+  font-family: 'Roboto', 'Noto Sans SC', sans-serif;
   background-color: var(--md-sys-color-surface);
   color: var(--md-sys-color-on-surface);
   transition: background-color 0.3s ease, color 0.3s ease;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* 全局动效 */
+/* ===== MD3 Tab Navigation ===== */
+md-tabs {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background-color: #6750A4 !important;
+  --md-tabs-active-indicator-color: #FFFFFF;
+  --md-sys-color-surface: #6750A4;
+  --md-sys-color-on-surface: #FFFFFF;
+  --md-sys-color-on-surface-variant: rgba(255, 255, 255, 0.7);
+}
+
+md-primary-tab {
+  --md-primary-tab-active-indicator-color: #FFFFFF !important;
+  --md-primary-tab-label-text-color: rgba(255, 255, 255, 0.7) !important;
+  --md-primary-tab-active-label-text-color: #FFFFFF !important;
+  --md-primary-tab-hover-label-text-color: #FFFFFF !important;
+  --md-primary-tab-focus-label-text-color: #FFFFFF !important;
+  --md-primary-tab-icon-color: rgba(255, 255, 255, 0.7) !important;
+  --md-primary-tab-active-icon-color: #FFFFFF !important;
+  --md-primary-tab-hover-icon-color: #FFFFFF !important;
+  --md-primary-tab-focus-icon-color: #FFFFFF !important;
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+
+md-primary-tab[active] {
+  color: #FFFFFF !important;
+}
+
+md-primary-tab:hover {
+  color: #FFFFFF !important;
+}
+
+.dark md-tabs {
+  background-color: #4F378B !important;
+  --md-sys-color-surface: #4F378B;
+  --md-sys-color-on-surface: #FFFFFF;
+  --md-sys-color-on-surface-variant: rgba(255, 255, 255, 0.7);
+}
+
+.md-tabs__tab-scroller {
+  scrollbar-width: none;
+}
+
+md-tabs::part(divider) {
+  display: none;
+}
+
+/* 隐藏状态层避免覆盖文字颜色 */
+md-primary-tab::before {
+  display: none !important;
+}
+
+md-primary-tab::after {
+  display: none !important;
+}
+
+/* ===== MD3 FAB & Buttons ===== */
+md-fab,
+md-filled-tonal-button {
+  --md-filled-tonal-button-container-color: var(--md-sys-color-secondary-container);
+  --md-filled-tonal-button-label-text-color: var(--md-sys-color-on-secondary-container);
+}
+
 md-fab {
   transition: box-shadow 0.2s ease, transform 0.2s ease;
 }
+
 md-fab:hover {
-  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  box-shadow: var(--m3-elevation-3);
   transform: scale(1.05);
 }
 
-/* 图标按钮统一样式，与fab背景色不同 */
+md-filled-button {
+  --md-filled-button-container-color: var(--md-sys-color-primary);
+  --md-filled-button-label-text-color: var(--md-sys-color-on-primary);
+}
+
+md-filled-tonal-button {
+  --md-filled-tonal-button-container-color: var(--md-sys-color-secondary-container);
+  --md-filled-tonal-button-label-text-color: var(--md-sys-color-on-secondary-container);
+}
+
 md-icon-button {
   --md-icon-button-unselected-icon-color: var(--md-sys-color-on-surface-variant);
-  background-color: var(--md-sys-color-surface-variant);
-  border-radius: 50%;
-  transition: background-color 0.2s ease;
-}
-md-icon-button:hover {
-  background-color: var(--md-sys-color-on-surface-variant);
-  color: var(--md-sys-color-surface);
 }
 
-/* 列表项圆角 */
+md-icon-button:hover {
+  background-color: var(--md-sys-color-surface-variant);
+}
+
+/* ===== MD3 Focus Ring ===== */
+md-fab {
+  --md-focus-ring-shape: var(--m3-shape-large);
+}
+
+md-filled-button,
+md-outlined-button,
+md-filled-tonal-button {
+  --md-focus-ring-shape: var(--m3-shape-full);
+}
+
+md-icon-button {
+  --md-focus-ring-shape: 50%;
+}
+
+md-primary-tab {
+  --md-focus-ring-shape: var(--m3-shape-small);
+}
+
+/* ===== MD3 List ===== */
+md-list {
+  padding: 0;
+}
+
 md-list-item {
-  --md-list-item-container-shape: var(--m3-shape-corner-medium);
+  --md-list-item-container-shape: var(--m3-shape-medium);
   margin: 4px 8px;
   transition: background-color 0.2s ease;
+  border-radius: var(--m3-shape-medium);
 }
 
-/* 卡片效果 */
+md-list-item:hover {
+  background-color: var(--md-sys-color-surface-container-high);
+}
+
+/* ===== MD3 Cards ===== */
 .card {
-  background: var(--md-sys-color-surface);
-  border-radius: var(--m3-shape-corner-large);
-  box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+  background: var(--md-sys-color-surface-container-low);
+  border-radius: var(--m3-shape-medium);
+  box-shadow: var(--m3-elevation-1);
   padding: 16px;
   margin: 8px;
-  transition: box-shadow 0.2s ease;
-}
-.card:hover {
-  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  transition: box-shadow 0.2s ease, background-color 0.2s ease;
 }
 
-/* 回到顶部按钮位置 */
-.back-to-top {
-  position: fixed;
-  right: 24px;
-  bottom: 24px;
-  z-index: 10;
+.card:hover {
+  box-shadow: var(--m3-elevation-2);
+  background: var(--md-sys-color-surface-container);
+}
+
+/* ===== MD3 Divider ===== */
+md-divider {
+  --md-divider-color: var(--md-sys-color-outline-variant);
+}
+
+/* ===== MD3 Text Fields ===== */
+md-outlined-text-field {
+  --md-outlined-text-field-container-shape: var(--m3-shape-extra-small);
+  --md-outlined-text-field-focus-outline-color: var(--md-sys-color-primary);
+}
+
+md-filled-text-field {
+  --md-filled-text-field-container-shape: var(--m3-shape-extra-small);
+  --md-filled-text-field-focus-active-indicator-color: var(--md-sys-color-primary);
+}
+
+/* ===== MD3 Switch ===== */
+md-switch {
+  --md-switch-selected-track-color: var(--md-sys-color-primary);
+  --md-switch-selected-handle-color: var(--md-sys-color-on-primary);
+  --md-switch-track-shape: var(--m3-shape-full);
+}
+
+/* ===== MD3 Ripple Effect ===== */
+.md-list-item__overlay {
+  border-radius: var(--m3-shape-medium);
+}
+
+/* ===== Content Container ===== */
+.content-container {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 8px 16px 100px;
+}
+
+/* ===== Page Title ===== */
+h1, h2, h3 {
+  color: var(--md-sys-color-on-surface);
+  margin: 0;
+  font-weight: 500;
+}
+
+h2 {
+  font-size: 1.5rem;
+  padding: 8px 0;
+}
+
+h3 {
+  font-size: 1.2rem;
+  padding: 4px 0;
+}
+
+/* ===== Scrollbar ===== */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--md-sys-color-surface-container);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--md-sys-color-outline);
+  border-radius: var(--m3-shape-full);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--md-sys-color-on-surface-variant);
+}
+
+/* ===== Transitions ===== */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.fade-enter-from {
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+.fade-leave-to {
+  opacity: 0;
+  transform: translateY(-8px);
 }

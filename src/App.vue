@@ -21,5 +21,7 @@ function scrollToTop() {
   bottom: 24px;
   right: 24px;
   z-index: 100;
+  --md-fab-container-color: var(--md-sys-color-primary);
+  --md-fab-icon-color: var(--md-sys-color-on-primary);
 }
 </style>
