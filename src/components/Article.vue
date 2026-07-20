@@ -30,7 +30,6 @@
       <Divider />
 
       <div class="article-content">
-        <h1>{{ selectedArticle.title }}</h1>
         <p class="article-date">{{ selectedArticle.date }}</p>
         <Divider />
         <div v-html="renderedContent" class="markdown-body"></div>
@@ -147,12 +146,19 @@ const mdModules = import.meta.glob('/articles/*.md', { as: 'raw', eager: true })
 
 function parseFrontmatter(raw) {
   const match = raw.match(/^---\s*\n([\s\S]*?)\n---\s*\n([\s\S]*)$/)
-  if (!match) return { meta: {}, content: raw }
+  if (!match) {
+    const titleMatch = raw.match(/^#\s+(.+)$/m)
+    return { meta: { title: titleMatch ? titleMatch[1] : '' }, content: raw }
+  }
   const frontmatter = {}
   match[1].split('\n').forEach(line => {
     const [key, ...rest] = line.split(':')
     if (key) frontmatter[key.trim()] = rest.join(':').trim()
   })
+  if (!frontmatter.title) {
+    const titleMatch = match[2].match(/^#\s+(.+)$/m)
+    if (titleMatch) frontmatter.title = titleMatch[1]
+  }
   return { meta: frontmatter, content: match[2] }
 }
 

@@ -4,9 +4,7 @@
 
 🎓 济南大学——Major in Computer & Science
 
-💻 学习路线：C → C++ → Python (ing) → 深度学习(ing) → 计算机视觉 (ing) → JavaScript → Kotlin
-
-📱 玩机设备：Pixel 3/6Pro/9Pro XL、Surface Pro 4/5/7/8、OnePlus 13T
+💻 学习路线：C → C++ → Python (ing) 
 
 🛠️ 开发环境：Ubuntu + Android 17
 
@@ -18,7 +16,7 @@
 
 参与打分系统前端开发（Vue3 技术栈）
 
-独立完成测试系统前端 + 仓库全栈开发
+独立完成测试系统全栈开发
 
 核心价值：解决校内评分打分的实际业务需求
 

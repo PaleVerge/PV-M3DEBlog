@@ -1,26 +1,29 @@
 <template>
   <div class="app">
-    <template v-if="isMobile">
+    <div class="mobile-view" :class="{ hidden: !isMobile }">
       <Navbar />
-    </template>
-    <template v-else>
+    </div>
+    <div class="desktop-view" :class="{ hidden: isMobile }">
       <DesktopLayout />
-    </template>
+    </div>
 
     <div v-if="isMobile" class="fab-container">
       <md-fab v-if="!fabExpanded" class="fab-main" @click="fabExpanded = true" aria-label="Menu">
         <md-icon slot="icon">add</md-icon>
       </md-fab>
       <template v-else>
-        <md-fab class="fab-item" @click="scrollToTop" aria-label="Back to top">
-          <md-icon slot="icon">arrow_upward</md-icon>
-        </md-fab>
-        <md-fab class="fab-item" @click="goToMessages" aria-label="Messages">
-          <md-icon slot="icon">chat</md-icon>
-        </md-fab>
-        <md-fab class="fab-item" @click="goToSettings" aria-label="Settings">
-          <md-icon slot="icon">settings</md-icon>
-        </md-fab>
+        <div class="fab-wide" @click="scrollToTop">
+          <md-icon>arrow_upward</md-icon>
+          <span>回到顶部</span>
+        </div>
+        <div class="fab-wide" @click="goToMessages">
+          <md-icon>chat</md-icon>
+          <span>留言板</span>
+        </div>
+        <div class="fab-wide" @click="goToSettings">
+          <md-icon>settings</md-icon>
+          <span>设置</span>
+        </div>
         <md-fab class="fab-close" @click="fabExpanded = false" aria-label="Close">
           <md-icon slot="icon">close</md-icon>
         </md-fab>
@@ -69,6 +72,15 @@ function goToSettings() {
 </script>
 
 <style scoped>
+.mobile-view,
+.desktop-view {
+  width: 100%;
+}
+
+.hidden {
+  display: none !important;
+}
+
 .fab-container {
   position: fixed;
   bottom: 24px;
@@ -76,7 +88,7 @@ function goToSettings() {
   z-index: 100;
   display: flex;
   flex-direction: column-reverse;
-  align-items: center;
+  align-items: flex-end;
   gap: 12px;
 }
 
@@ -85,17 +97,33 @@ function goToSettings() {
   --md-fab-icon-color: var(--md-sys-color-on-primary);
 }
 
-.fab-item {
-  --md-fab-container-color: var(--md-sys-color-secondary-container);
-  --md-fab-icon-color: var(--md-sys-color-on-secondary-container);
-  width: 40px;
-  height: 40px;
+.fab-wide {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  background-color: var(--md-sys-color-secondary-container);
+  color: var(--md-sys-color-on-secondary-container);
+  border-radius: var(--m3-shape-large);
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  box-shadow: var(--m3-elevation-2);
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+  min-width: 140px;
+}
+
+.fab-wide:hover {
+  box-shadow: var(--m3-elevation-3);
+  transform: scale(1.02);
+}
+
+.fab-wide md-icon {
+  font-size: 20px;
 }
 
 .fab-close {
   --md-fab-container-color: var(--md-sys-color-error);
   --md-fab-icon-color: var(--md-sys-color-on-error);
-  width: 40px;
-  height: 40px;
 }
 </style>

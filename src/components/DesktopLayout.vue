@@ -15,47 +15,12 @@
       </div>
     </header>
 
-    <main class="desktop-main">
+    <main class="desktop-main" :class="{ hidden: selectedArticle }">
       <aside class="sidebar-left">
         <div class="panel profile-panel">
           <h3>个人简介</h3>
           <Divider />
           <div class="profile-content" v-html="homeContent"></div>
-        </div>
-
-        <div class="panel contact-panel">
-          <h3>联系作者</h3>
-          <Divider />
-          <md-list>
-            <md-list-item @click="copyText('fnme3706679@gmail.com')">
-              <md-icon slot="start">email</md-icon>
-              <div slot="supporting-text">fnme3706679@gmail.com</div>
-            </md-list-item>
-            <md-list-item @click="copyText('574746791')">
-              <md-icon slot="start">chat</md-icon>
-              <div slot="supporting-text">QQ: 574746791</div>
-            </md-list-item>
-            <md-list-item @click="copyText('distandce')">
-              <md-icon slot="start">chat</md-icon>
-              <div slot="supporting-text">微信: distandce</div>
-            </md-list-item>
-            <md-list-item type="link" href="https://x.com/qing1435" target="_blank">
-              <md-icon slot="start">open_in_new</md-icon>
-              <div slot="supporting-text">X</div>
-            </md-list-item>
-            <md-list-item type="link" href="https://github.com/paleverge" target="_blank">
-              <md-icon slot="start">open_in_new</md-icon>
-              <div slot="supporting-text">Github</div>
-            </md-list-item>
-          </md-list>
-        </div>
-
-        <div class="panel friend-panel">
-          <h3>友情链接</h3>
-          <Divider />
-          <div class="friend-placeholder">
-            <p>虚位以待，广告招租中...</p>
-          </div>
         </div>
       </aside>
 
@@ -80,7 +45,7 @@
           </div>
           <md-list v-else>
             <md-list-item
-              v-for="article in filteredArticles"
+              v-for="article in pagedArticles"
               :key="article.slug"
               @click="openArticle(article)"
               class="article-item"
@@ -90,41 +55,16 @@
               <md-icon slot="end">chevron_right</md-icon>
             </md-list-item>
           </md-list>
-        </div>
-
-        <div class="panel article-detail" v-if="selectedArticle">
-          <div class="panel-header">
-            <h3>{{ selectedArticle.title }}</h3>
-            <md-icon-button @click="selectedArticle = null">
-              <md-icon>close</md-icon>
-            </md-icon-button>
-          </div>
-          <Divider />
-          <p class="article-date">{{ selectedArticle.date }}</p>
-          <div v-html="renderedArticle" class="markdown-body"></div>
-
-          <Divider />
-          <div class="article-actions">
-            <md-icon-button @click="toggleArticleLike" class="like-btn" :class="{ liked: articleLiked }">
-              <md-icon>{{ articleLiked ? 'favorite' : 'favorite_border' }}</md-icon>
-            </md-icon-button>
-            <span class="like-count">{{ articleLikeCount }} 赞</span>
-          </div>
-
-          <Divider />
-          <h4>评论 ({{ articleComments.length }})</h4>
-          <div class="comment-form">
-            <md-outlined-text-field label="昵称" :value="commentNickname" @input="commentNickname = $event.target.value" placeholder="昵称"></md-outlined-text-field>
-            <md-outlined-text-field label="评论" :value="commentContent" @input="commentContent = $event.target.value" placeholder="说点什么..." type="textarea" rows="3"></md-outlined-text-field>
-            <md-filled-button @click="submitComment" :disabled="!commentNickname || !commentContent">发表评论</md-filled-button>
-          </div>
-          <div v-for="comment in articleComments" :key="comment.id" class="comment-item">
-            <div class="comment-header">
-              <span class="comment-nickname">{{ comment.nickname }}</span>
-              <span class="comment-time">{{ comment.time }}</span>
-            </div>
-            <p class="comment-content">{{ comment.content }}</p>
-            <Divider />
+          <div v-if="totalArticlePages > 1" class="pagination">
+            <md-filled-tonal-button :disabled="articlePage === 1" @click="articlePage--">
+              <md-icon slot="icon">chevron_left</md-icon>
+              上一页
+            </md-filled-tonal-button>
+            <span class="page-info">{{ articlePage }} / {{ totalArticlePages }}</span>
+            <md-filled-tonal-button :disabled="articlePage === totalArticlePages" @click="articlePage++">
+              下一页
+              <md-icon slot="icon">chevron_right</md-icon>
+            </md-filled-tonal-button>
           </div>
         </div>
       </section>
@@ -156,8 +96,95 @@
             </div>
           </div>
         </div>
+
+        <div class="panel friend-panel">
+          <h3>友情链接</h3>
+          <Divider />
+          <div class="friend-placeholder">
+            <p>虚位以待，广告招租中...</p>
+          </div>
+        </div>
+
+        <div class="panel contact-panel">
+          <h3>联系作者</h3>
+          <Divider />
+          <md-list>
+            <md-list-item @click="copyText('fnme3706679@gmail.com')">
+              <md-icon slot="start">email</md-icon>
+              <div slot="supporting-text">fnme3706679@gmail.com</div>
+            </md-list-item>
+            <md-list-item @click="copyText('574746791')">
+              <md-icon slot="start">chat</md-icon>
+              <div slot="supporting-text">QQ: 574746791</div>
+            </md-list-item>
+            <md-list-item @click="copyText('distandce')">
+              <md-icon slot="start">chat</md-icon>
+              <div slot="supporting-text">微信: distandce</div>
+            </md-list-item>
+            <md-list-item type="link" href="https://x.com/qing1435" target="_blank">
+              <md-icon slot="start">open_in_new</md-icon>
+              <div slot="supporting-text">X</div>
+            </md-list-item>
+            <md-list-item type="link" href="https://github.com/paleverge" target="_blank">
+              <md-icon slot="start">open_in_new</md-icon>
+              <div slot="supporting-text">Github</div>
+            </md-list-item>
+          </md-list>
+        </div>
       </aside>
     </main>
+
+    <div class="article-fullscreen" v-if="selectedArticle">
+      <div class="article-fullscreen-left">
+        <div class="panel article-detail">
+          <div class="panel-header">
+            <md-icon-button @click="selectedArticle = null">
+              <md-icon>close</md-icon>
+            </md-icon-button>
+            <h3>{{ selectedArticle.title }}</h3>
+          </div>
+          <Divider />
+          <p class="article-date">{{ selectedArticle.date }}</p>
+          <div class="article-scroll">
+            <div v-html="renderedArticle" class="markdown-body"></div>
+
+            <Divider />
+            <div class="article-actions">
+              <md-icon-button @click="toggleArticleLike" class="like-btn" :class="{ liked: articleLiked }">
+                <md-icon>{{ articleLiked ? 'favorite' : 'favorite_border' }}</md-icon>
+              </md-icon-button>
+              <span class="like-count">{{ articleLikeCount }} 赞</span>
+            </div>
+
+            <Divider />
+            <h4>评论 ({{ articleComments.length }})</h4>
+            <div class="comment-form">
+              <md-outlined-text-field label="昵称" :value="commentNickname" @input="commentNickname = $event.target.value" placeholder="昵称"></md-outlined-text-field>
+              <md-outlined-text-field label="评论" :value="commentContent" @input="commentContent = $event.target.value" placeholder="说点什么..." type="textarea" rows="3"></md-outlined-text-field>
+              <md-filled-button @click="submitComment" :disabled="!commentNickname || !commentContent">发表评论</md-filled-button>
+            </div>
+            <div v-for="comment in articleComments" :key="comment.id" class="comment-item">
+              <div class="comment-header">
+                <span class="comment-nickname">{{ comment.nickname }}</span>
+                <span class="comment-time">{{ comment.time }}</span>
+              </div>
+              <p class="comment-content">{{ comment.content }}</p>
+              <Divider />
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="article-fullscreen-right">
+        <div class="panel">
+          <h3>文章目录</h3>
+          <Divider />
+          <div class="article-toc">
+            <p>{{ selectedArticle.title }}</p>
+            <p class="toc-date">{{ selectedArticle.date }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <md-dialog :open="showSettings" @close="showSettings = false">
       <div slot="headline">设置</div>
@@ -193,7 +220,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { marked } from 'marked'
 import SearchBar from './SearchBar.vue'
 import Divider from './Divider.vue'
@@ -207,6 +234,8 @@ const articleLiked = ref(false)
 const articleComments = ref([])
 const commentNickname = ref('')
 const commentContent = ref('')
+const articlePage = ref(1)
+const articlesPerPage = 5
 
 const msgNickname = ref('')
 const msgContent = ref('')
@@ -233,12 +262,19 @@ const mdModules = import.meta.glob('/articles/*.md', { as: 'raw', eager: true })
 
 function parseFrontmatter(raw) {
   const match = raw.match(/^---\s*\n([\s\S]*?)\n---\s*\n([\s\S]*)$/)
-  if (!match) return { meta: {}, content: raw }
+  if (!match) {
+    const titleMatch = raw.match(/^#\s+(.+)$/m)
+    return { meta: { title: titleMatch ? titleMatch[1] : '' }, content: raw }
+  }
   const frontmatter = {}
   match[1].split('\n').forEach(line => {
     const [key, ...rest] = line.split(':')
     if (key) frontmatter[key.trim()] = rest.join(':').trim()
   })
+  if (!frontmatter.title) {
+    const titleMatch = match[2].match(/^#\s+(.+)$/m)
+    if (titleMatch) frontmatter.title = titleMatch[1]
+  }
   return { meta: frontmatter, content: match[2] }
 }
 
@@ -324,6 +360,17 @@ const filteredArticles = computed(() => {
   if (articleSort.value === 'hot') list.sort((a, b) => b.likes - a.likes)
   return list
 })
+
+watch([searchQuery, articleSort], () => {
+  articlePage.value = 1
+})
+
+const pagedArticles = computed(() => {
+  const start = (articlePage.value - 1) * articlesPerPage
+  return filteredArticles.value.slice(start, start + articlesPerPage)
+})
+
+const totalArticlePages = computed(() => Math.ceil(filteredArticles.value.length / articlesPerPage))
 
 const filteredMessages = computed(() => {
   let list = [...messages.value]
@@ -453,6 +500,12 @@ function copyText(text) {
   --md-outlined-text-field-hover-outline-color: rgba(255, 255, 255, 0.5);
   --md-outlined-text-field-focus-outline-color: white;
   --md-outlined-text-field-caret-color: white;
+  --md-outlined-text-field-leading-icon-color: rgba(255, 255, 255, 0.7);
+}
+
+.header-center :deep(md-outlined-text-field:focus-within) {
+  --md-outlined-text-field-container-color: rgba(255, 255, 255, 0.2);
+  --md-outlined-text-field-label-text-color: white;
 }
 
 .header-right {
@@ -472,6 +525,8 @@ function copyText(text) {
   max-width: 1400px;
   margin: 0 auto;
   width: 100%;
+  height: calc(100vh - 56px);
+  overflow: hidden;
 }
 
 .sidebar-left {
@@ -480,19 +535,22 @@ function copyText(text) {
   display: flex;
   flex-direction: column;
   gap: 16px;
+  overflow-y: auto;
 }
 
 .content-main {
   flex: 1;
   min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+  overflow-y: auto;
 }
 
 .sidebar-right {
   width: 320px;
   flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  overflow-y: auto;
 }
 
 .panel {
@@ -501,11 +559,6 @@ function copyText(text) {
   padding: 20px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
   border: 1px solid var(--md-sys-color-outline-variant);
-  transition: box-shadow 0.2s ease;
-}
-
-.panel:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
 }
 
 .panel h3 {
@@ -521,9 +574,7 @@ function copyText(text) {
   justify-content: space-between;
 }
 
-.panel-header h3 {
-  margin: 0;
-}
+.panel-header h3 { margin: 0; }
 
 .sort-buttons {
   display: flex;
@@ -549,13 +600,7 @@ function copyText(text) {
 
 .profile-content :deep(h1),
 .profile-content :deep(h2) { display: none; }
-
-.profile-content :deep(h3) {
-  color: var(--md-sys-color-primary);
-  font-size: 0.9rem;
-  margin: 12px 0 4px;
-}
-
+.profile-content :deep(h3) { color: var(--md-sys-color-primary); font-size: 0.9rem; margin: 12px 0 4px; }
 .profile-content :deep(p) { margin: 4px 0; }
 
 .friend-placeholder {
@@ -566,14 +611,83 @@ function copyText(text) {
 }
 
 .article-item { cursor: pointer; }
+.empty-state { text-align: center; color: var(--md-sys-color-on-surface-variant); padding: 24px; }
 
-.empty-state {
-  text-align: center;
-  color: var(--md-sys-color-on-surface-variant);
-  padding: 24px;
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 16px 0 8px;
 }
 
-.article-detail .article-date {
+.page-info { font-size: 0.875rem; color: var(--md-sys-color-on-surface-variant); }
+
+/* Fullscreen article view */
+.article-fullscreen {
+  position: fixed;
+  top: 56px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  background: var(--md-sys-color-surface);
+  z-index: 90;
+}
+
+.article-fullscreen-left {
+  flex: 1;
+  padding: 20px;
+  overflow: hidden;
+  display: flex;
+}
+
+.article-fullscreen-left .panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.article-fullscreen-left .panel-header {
+  flex-shrink: 0;
+}
+
+.article-fullscreen-left .panel-header h3 {
+  flex: 1;
+  margin-left: 12px;
+  font-size: 1.1rem;
+}
+
+.article-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+.article-fullscreen-right {
+  width: 280px;
+  padding: 20px 20px 20px 0;
+  flex-shrink: 0;
+}
+
+.article-fullscreen-right .panel {
+  position: sticky;
+  top: 76px;
+}
+
+.article-toc p {
+  margin: 4px 0;
+  color: var(--md-sys-color-on-surface-variant);
+  font-size: 0.875rem;
+}
+
+.toc-date {
+  font-size: 0.75rem !important;
+  color: var(--md-sys-color-on-surface-variant) !important;
+}
+
+.article-date {
   color: var(--md-sys-color-on-surface-variant);
   font-size: 0.875rem;
   margin: 4px 0 8px;
@@ -632,14 +746,7 @@ function copyText(text) {
 }
 
 .comment-item { padding: 8px 0; }
-
-.comment-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 4px;
-}
-
+.comment-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
 .comment-nickname { font-weight: 500; font-size: 0.875rem; color: var(--md-sys-color-on-surface); }
 .comment-time { font-size: 0.7rem; color: var(--md-sys-color-on-surface-variant); }
 .comment-content { margin: 0; font-size: 0.875rem; color: var(--md-sys-color-on-surface-variant); }
@@ -651,77 +758,28 @@ function copyText(text) {
   margin-bottom: 12px;
 }
 
-.message-list {
-  max-height: 400px;
-  overflow-y: auto;
-}
-
+.message-list { max-height: 400px; overflow-y: auto; }
 .message-item { padding: 8px 0; }
-
-.message-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 4px;
-}
-
+.message-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
 .msg-nickname { font-weight: 500; font-size: 0.875rem; color: var(--md-sys-color-on-surface); }
 .msg-time { font-size: 0.7rem; color: var(--md-sys-color-on-surface-variant); }
 .msg-content { margin: 0; font-size: 0.875rem; color: var(--md-sys-color-on-surface-variant); }
-
-.message-actions {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  margin-top: 4px;
-}
-
+.message-actions { display: flex; align-items: center; gap: 4px; margin-top: 4px; }
 .action-btn { opacity: 0.7; }
 .action-btn:hover { opacity: 1; }
 .liked { --md-icon-button-icon-color: #E91E63; opacity: 1; }
 .action-count { font-size: 0.75rem; color: var(--md-sys-color-on-surface-variant); }
 
-.settings-content {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
+.settings-content { display: flex; flex-direction: column; gap: 12px; }
+.setting-item { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; }
+.setting-item span { color: var(--md-sys-color-on-surface); }
+.admin-section h4 { color: var(--md-sys-color-on-surface); font-size: 0.9rem; margin: 8px 0 4px; }
+.login-form { display: flex; flex-direction: column; gap: 12px; padding: 8px 0; }
+.error-tip { color: var(--md-sys-color-error); margin: 0; font-size: 0.875rem; }
+.admin-header { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; }
 
-.setting-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 8px 0;
-}
-
-.setting-item span {
-  color: var(--md-sys-color-on-surface);
-}
-
-.admin-section h4 {
-  color: var(--md-sys-color-on-surface);
-  font-size: 0.9rem;
-  margin: 8px 0 4px;
-}
-
-.login-form {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  padding: 8px 0;
-}
-
-.error-tip {
-  color: var(--md-sys-color-error);
-  margin: 0;
-  font-size: 0.875rem;
-}
-
-.admin-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 8px 0;
+.hidden {
+  display: none !important;
 }
 
 @media (max-width: 1024px) {
