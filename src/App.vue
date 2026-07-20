@@ -38,6 +38,15 @@ import Navbar from './components/Navbar.vue'
 import DesktopLayout from './components/DesktopLayout.vue'
 import '@material/web/fab/fab.js'
 import '@material/web/icon/icon.js'
+import '@material/web/iconbutton/icon-button.js'
+import '@material/web/button/filled-tonal-button.js'
+import '@material/web/button/filled-button.js'
+import '@material/web/button/outlined-button.js'
+import '@material/web/list/list.js'
+import '@material/web/list/list-item.js'
+import '@material/web/textfield/outlined-text-field.js'
+import '@material/web/switch/switch.js'
+import '@material/web/dialog/dialog.js'
 
 const isMobile = ref(true)
 const fabExpanded = ref(false)

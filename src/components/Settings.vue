@@ -63,11 +63,10 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import Divider from './Divider.vue'
+import { adminLoginAPI, isAdminAPI, adminLogoutAPI, getMessages } from '../api/index'
 
 const DARK_MODE_KEY = 'm3eblog_dark_mode'
 const MESSAGES_KEY = 'm3eblog_messages'
-const AUTH_KEY = 'm3eblog_admin_auth'
-const ADMIN_PASSWORD = 'm3de2025'
 
 const darkMode = ref(false)
 const password = ref('')
@@ -75,7 +74,7 @@ const isLoggedIn = ref(false)
 const loginError = ref(false)
 const messages = ref([])
 
-onMounted(() => {
+onMounted(async () => {
   const stored = localStorage.getItem(DARK_MODE_KEY)
   if (stored === 'true') {
     darkMode.value = true
@@ -91,9 +90,8 @@ onMounted(() => {
     }
   }
 
-  const auth = sessionStorage.getItem(AUTH_KEY)
-  if (auth === 'true') {
-    isLoggedIn.value = true
+  isLoggedIn.value = await isAdminAPI()
+  if (isLoggedIn.value) {
     loadMessages()
   }
 })
@@ -109,11 +107,11 @@ const toggleDarkMode = (e) => {
   }
 }
 
-function login() {
-  if (password.value === ADMIN_PASSWORD) {
+async function login() {
+  const success = await adminLoginAPI(password.value)
+  if (success) {
     isLoggedIn.value = true
     loginError.value = false
-    sessionStorage.setItem(AUTH_KEY, 'true')
     loadMessages()
     password.value = ''
   } else {
@@ -121,23 +119,17 @@ function login() {
   }
 }
 
-function logout() {
+async function logout() {
+  await adminLogoutAPI()
   isLoggedIn.value = false
-  sessionStorage.removeItem(AUTH_KEY)
 }
 
-function loadMessages() {
-  const stored = localStorage.getItem(MESSAGES_KEY)
-  if (stored) {
-    try {
-      messages.value = JSON.parse(stored)
-    } catch (e) {
-      messages.value = []
-    }
-  }
+async function loadMessages() {
+  messages.value = await getMessages()
 }
 
 function deleteMessage(index) {
+  // In a real API, call backend to delete
   messages.value.splice(index, 1)
   localStorage.setItem(MESSAGES_KEY, JSON.stringify(messages.value))
 }

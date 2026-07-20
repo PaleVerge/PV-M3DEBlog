@@ -124,6 +124,8 @@
 import { ref, computed, onMounted } from 'vue'
 import { marked } from 'marked'
 import Divider from './Divider.vue'
+import articlesMeta from 'virtual:articles-meta'
+import { getArticleLikes, toggleArticleLikeAPI, getArticleComments, addArticleComment, isAdminAPI } from '../api/index'
 
 const articles = ref([])
 const selectedArticle = ref(null)
@@ -137,47 +139,16 @@ const commentSortBy = ref('time')
 const replyingTo = ref(null)
 const replyContent = ref('')
 
-const LIKE_KEY = 'm3eblog_likes'
-const COMMENT_KEY = 'm3eblog_comments'
-const AUTH_KEY = 'm3eblog_admin_auth'
 const NICKNAME_KEY = 'm3eblog_nickname'
 
-const mdModules = import.meta.glob('/articles/*.md', { as: 'raw', eager: true })
+const mdModules = import.meta.glob('/articles/*.md', { query: '?raw', import: 'default' })
 
-function parseFrontmatter(raw) {
-  const match = raw.match(/^---\s*\n([\s\S]*?)\n---\s*\n([\s\S]*)$/)
-  if (!match) {
-    const titleMatch = raw.match(/^#\s+(.+)$/m)
-    return { meta: { title: titleMatch ? titleMatch[1] : '' }, content: raw }
-  }
-  const frontmatter = {}
-  match[1].split('\n').forEach(line => {
-    const [key, ...rest] = line.split(':')
-    if (key) frontmatter[key.trim()] = rest.join(':').trim()
-  })
-  if (!frontmatter.title) {
-    const titleMatch = match[2].match(/^#\s+(.+)$/m)
-    if (titleMatch) frontmatter.title = titleMatch[1]
-  }
-  return { meta: frontmatter, content: match[2] }
-}
-
-onMounted(() => {
-  const list = []
-  for (const path in mdModules) {
-    const slug = path.split('/').pop().replace('.md', '')
-    const { meta, content } = parseFrontmatter(mdModules[path])
-    list.push({
-      slug,
-      title: meta.title || slug,
-      date: meta.date || '',
-      raw: content
-    })
-  }
+onMounted(async () => {
+  const list = [...articlesMeta]
   list.sort((a, b) => (b.date > a.date ? 1 : -1))
   articles.value = list
 
-  isAdmin.value = sessionStorage.getItem(AUTH_KEY) === 'true'
+  isAdmin.value = await isAdminAPI()
 
   const savedNickname = sessionStorage.getItem(NICKNAME_KEY)
   if (savedNickname) {
@@ -186,7 +157,7 @@ onMounted(() => {
 })
 
 const renderedContent = computed(() => {
-  if (!selectedArticle.value) return ''
+  if (!selectedArticle.value || !selectedArticle.value.raw) return ''
   return marked.parse(selectedArticle.value.raw)
 })
 
@@ -202,59 +173,52 @@ function generateId() {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 8)
 }
 
-function openArticle(article) {
+async function openArticle(article) {
   selectedArticle.value = article
-  loadArticleData()
+  if (!selectedArticle.value.raw) {
+    const fetcher = mdModules[`/articles/${article.slug}.md`]
+    if (fetcher) {
+      let raw = await fetcher()
+      // Remove frontmatter for rendering
+      const match = raw.match(/^---\s*\n([\s\S]*?)\n---\s*\n([\s\S]*)$/)
+      if (match) {
+        raw = match[2]
+      }
+      selectedArticle.value.raw = raw
+    }
+  }
+  await loadArticleData()
 }
 
 function backToList() {
   selectedArticle.value = null
 }
 
-function loadArticleData() {
+async function loadArticleData() {
   if (!selectedArticle.value) return
   const slug = selectedArticle.value.slug
 
-  const allLikes = JSON.parse(localStorage.getItem(LIKE_KEY) || '{}')
-  articleLikeCount.value = allLikes[slug]?.count || 0
-  articleLiked.value = allLikes[slug]?.liked || false
+  const likesData = await getArticleLikes(slug)
+  articleLikeCount.value = likesData.count || 0
+  articleLiked.value = likesData.liked || false
 
-  const allComments = JSON.parse(localStorage.getItem(COMMENT_KEY) || '{}')
-  comments.value = allComments[slug] || []
+  comments.value = await getArticleComments(slug)
 }
 
-function toggleArticleLike() {
+async function toggleArticleLike() {
   if (!selectedArticle.value) return
   const slug = selectedArticle.value.slug
-  const allLikes = JSON.parse(localStorage.getItem(LIKE_KEY) || '{}')
-
-  if (!allLikes[slug]) {
-    allLikes[slug] = { count: 0, liked: false }
-  }
-
-  if (articleLiked.value) {
-    allLikes[slug].count--
-    allLikes[slug].liked = false
-    articleLiked.value = false
-  } else {
-    allLikes[slug].count++
-    allLikes[slug].liked = true
-    articleLiked.value = true
-  }
-  articleLikeCount.value = allLikes[slug].count
-  localStorage.setItem(LIKE_KEY, JSON.stringify(allLikes))
+  const newData = await toggleArticleLikeAPI(slug, articleLiked.value)
+  
+  articleLikeCount.value = newData.count
+  articleLiked.value = newData.liked
 }
 
-function submitComment() {
+async function submitComment() {
   if (!commentNickname.value || !commentContent.value || !selectedArticle.value) return
   const slug = selectedArticle.value.slug
-  const allComments = JSON.parse(localStorage.getItem(COMMENT_KEY) || '{}')
-
-  if (!allComments[slug]) {
-    allComments[slug] = []
-  }
-
-  allComments[slug].unshift({
+  
+  const newComment = {
     id: generateId(),
     nickname: commentNickname.value,
     content: commentContent.value,
@@ -262,25 +226,25 @@ function submitComment() {
     likes: 0,
     likedBy: [],
     replies: []
-  })
+  }
 
-  localStorage.setItem(COMMENT_KEY, JSON.stringify(allComments))
-  comments.value = allComments[slug]
+  comments.value = await addArticleComment(slug, newComment)
   sessionStorage.setItem(NICKNAME_KEY, commentNickname.value)
   commentContent.value = ''
 }
 
 function deleteComment(id) {
+  // In a real API, call api to delete comment
   if (!selectedArticle.value) return
-  const slug = selectedArticle.value.slug
-  const allComments = JSON.parse(localStorage.getItem(COMMENT_KEY) || '{}')
-
-  if (allComments[slug]) {
-    const index = allComments[slug].findIndex(c => c.id === id)
-    if (index !== -1) {
-      allComments[slug].splice(index, 1)
-      localStorage.setItem(COMMENT_KEY, JSON.stringify(allComments))
-      comments.value = allComments[slug]
+  const index = comments.value.findIndex(c => c.id === id)
+  if (index !== -1) {
+    comments.value.splice(index, 1)
+    // LocalStorage fallback for delete
+    const slug = selectedArticle.value.slug
+    const allComments = JSON.parse(localStorage.getItem('m3eblog_comments') || '{}')
+    if (allComments[slug]) {
+      allComments[slug] = comments.value
+      localStorage.setItem('m3eblog_comments', JSON.stringify(allComments))
     }
   }
 }
@@ -306,10 +270,11 @@ function toggleCommentLike(comment) {
     comment.likes--
   }
 
+  // LocalStorage fallback
   const slug = selectedArticle.value.slug
-  const allComments = JSON.parse(localStorage.getItem(COMMENT_KEY) || '{}')
+  const allComments = JSON.parse(localStorage.getItem('m3eblog_comments') || '{}')
   allComments[slug] = comments.value
-  localStorage.setItem(COMMENT_KEY, JSON.stringify(allComments))
+  localStorage.setItem('m3eblog_comments', JSON.stringify(allComments))
 }
 
 function toggleReply(comment) {
@@ -345,9 +310,9 @@ function submitReply(commentId) {
     })
 
     const slug = selectedArticle.value.slug
-    const allComments = JSON.parse(localStorage.getItem(COMMENT_KEY) || '{}')
+    const allComments = JSON.parse(localStorage.getItem('m3eblog_comments') || '{}')
     allComments[slug] = comments.value
-    localStorage.setItem(COMMENT_KEY, JSON.stringify(allComments))
+    localStorage.setItem('m3eblog_comments', JSON.stringify(allComments))
   }
   replyingTo.value = null
   replyContent.value = ''

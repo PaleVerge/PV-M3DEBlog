@@ -92,8 +92,8 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import Divider from './Divider.vue'
+import { getMessages, saveMessages, addMessage } from '../api/index'
 
-const STORAGE_KEY = 'm3eblog_messages'
 const NICKNAME_KEY = 'm3eblog_nickname'
 
 const nickname = ref('')
@@ -106,15 +106,9 @@ const sortBy = ref('time')
 const replyingTo = ref(null)
 const replyContent = ref('')
 
-onMounted(() => {
-  const stored = localStorage.getItem(STORAGE_KEY)
-  if (stored) {
-    try {
-      messages.value = JSON.parse(stored)
-    } catch (e) {
-      messages.value = []
-    }
-  }
+onMounted(async () => {
+  messages.value = await getMessages()
+  
   const savedNickname = sessionStorage.getItem(NICKNAME_KEY)
   if (savedNickname) {
     currentNickname.value = savedNickname
@@ -134,11 +128,7 @@ function generateId() {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 8)
 }
 
-function saveMessages() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(messages.value))
-}
-
-const submitMessage = () => {
+const submitMessage = async () => {
   if (!nickname.value || !content.value) return
   const msg = {
     id: generateId(),
@@ -149,8 +139,8 @@ const submitMessage = () => {
     likedBy: [],
     replies: []
   }
-  messages.value.unshift(msg)
-  saveMessages()
+  await addMessage(msg)
+  messages.value = await getMessages() // Refresh from API
   currentNickname.value = nickname.value
   sessionStorage.setItem(NICKNAME_KEY, nickname.value)
   content.value = ''
@@ -166,23 +156,23 @@ function cancelEdit() {
   editContent.value = ''
 }
 
-function saveEdit(id) {
+async function saveEdit(id) {
   if (!editContent.value) return
   const msg = messages.value.find(m => m.id === id)
   if (msg) {
     msg.content = editContent.value
     msg.time = new Date().toLocaleString() + ' (已编辑)'
-    saveMessages()
+    await saveMessages(messages.value)
   }
   editingId.value = null
   editContent.value = ''
 }
 
-function deleteMessage(id) {
+async function deleteMessage(id) {
   const index = messages.value.findIndex(m => m.id === id)
   if (index !== -1) {
     messages.value.splice(index, 1)
-    saveMessages()
+    await saveMessages(messages.value)
   }
 }
 
@@ -190,7 +180,7 @@ function isLiked(msg) {
   return (msg.likedBy || []).includes(currentNickname.value)
 }
 
-function toggleLike(msg) {
+async function toggleLike(msg) {
   if (!currentNickname.value) {
     alert('请先输入昵称')
     return
@@ -206,7 +196,7 @@ function toggleLike(msg) {
     msg.likedBy.splice(idx, 1)
     msg.likes--
   }
-  saveMessages()
+  await saveMessages(messages.value)
 }
 
 function toggleReply(msg) {
@@ -224,7 +214,7 @@ function cancelReply() {
   replyContent.value = ''
 }
 
-function submitReply(msgId) {
+async function submitReply(msgId) {
   if (!replyContent.value) return
   if (!currentNickname.value) {
     alert('请先输入昵称')
@@ -239,7 +229,7 @@ function submitReply(msgId) {
       content: replyContent.value,
       time: new Date().toLocaleString()
     })
-    saveMessages()
+    await saveMessages(messages.value)
   }
   replyingTo.value = null
   replyContent.value = ''
