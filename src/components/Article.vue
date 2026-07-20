@@ -39,10 +39,10 @@
       <Divider />
 
       <div class="article-actions">
-        <md-icon-button @click="toggleLike" class="like-btn" :class="{ liked: isLiked }">
-          <md-icon>{{ isLiked ? 'favorite' : 'favorite_border' }}</md-icon>
+        <md-icon-button @click="toggleArticleLike" class="like-btn" :class="{ liked: articleLiked }">
+          <md-icon>{{ articleLiked ? 'favorite' : 'favorite_border' }}</md-icon>
         </md-icon-button>
-        <span class="like-count">{{ likeCount }} 赞</span>
+        <span class="like-count">{{ articleLikeCount }} 赞</span>
       </div>
 
       <Divider />
@@ -50,23 +50,21 @@
       <div class="comment-section">
         <h3>评论 ({{ comments.length }})</h3>
         <div class="comment-form">
-          <md-outlined-text-field
-            label="昵称"
-            :value="commentNickname"
-            @input="commentNickname = $event.target.value"
-            placeholder="你的昵称"
-          ></md-outlined-text-field>
-          <md-outlined-text-field
-            label="评论"
-            :value="commentContent"
-            @input="commentContent = $event.target.value"
-            placeholder="说点什么..."
-            type="textarea"
-            rows="3"
-          ></md-outlined-text-field>
-          <md-filled-button @click="submitComment" :disabled="!commentNickname || !commentContent">
-            发表评论
-          </md-filled-button>
+          <md-outlined-text-field label="昵称" :value="commentNickname" @input="commentNickname = $event.target.value" placeholder="你的昵称"></md-outlined-text-field>
+          <md-outlined-text-field label="评论" :value="commentContent" @input="commentContent = $event.target.value" placeholder="说点什么..." type="textarea" rows="3"></md-outlined-text-field>
+          <md-filled-button @click="submitComment" :disabled="!commentNickname || !commentContent">发表评论</md-filled-button>
+        </div>
+
+        <div class="sort-bar" v-if="comments.length > 1">
+          <span class="sort-label">排序：</span>
+          <md-filled-tonal-button :class="{ active: commentSortBy === 'time' }" @click="commentSortBy = 'time'">
+            <md-icon slot="icon">schedule</md-icon>
+            最新
+          </md-filled-tonal-button>
+          <md-filled-tonal-button :class="{ active: commentSortBy === 'hot' }" @click="commentSortBy = 'hot'">
+            <md-icon slot="icon">local_fire_department</md-icon>
+            热门
+          </md-filled-tonal-button>
         </div>
 
         <div v-if="comments.length === 0" class="empty-comments">
@@ -74,22 +72,48 @@
         </div>
 
         <div v-else class="comment-list">
-          <div v-for="(comment, index) in comments" :key="index" class="comment-item">
+          <div v-for="comment in sortedComments" :key="comment.id" class="comment-item">
             <div class="comment-header">
               <span class="comment-nickname">{{ comment.nickname }}</span>
               <div class="comment-right">
                 <span class="comment-time">{{ comment.time }}</span>
-                <md-icon-button
-                  v-if="isAdmin"
-                  @click="deleteComment(index)"
-                  class="delete-comment-btn"
-                >
+                <md-icon-button v-if="isAdmin" @click="deleteComment(comment.id)" class="delete-comment-btn">
                   <md-icon>delete</md-icon>
                 </md-icon-button>
               </div>
             </div>
             <p class="comment-content">{{ comment.content }}</p>
-            <Divider v-if="index < comments.length - 1" />
+
+            <div class="comment-actions">
+              <md-icon-button @click="toggleCommentLike(comment)" class="action-btn" :class="{ liked: isCommentLiked(comment) }">
+                <md-icon>{{ isCommentLiked(comment) ? 'favorite' : 'favorite_border' }}</md-icon>
+              </md-icon-button>
+              <span class="like-count">{{ comment.likes || 0 }}</span>
+              <md-icon-button @click="toggleReply(comment)" class="action-btn reply-btn">
+                <md-icon>reply</md-icon>
+              </md-icon-button>
+              <span class="reply-count">{{ (comment.replies || []).length }}</span>
+            </div>
+
+            <div v-if="replyingTo === comment.id" class="reply-form">
+              <md-outlined-text-field label="回复内容" :value="replyContent" @input="replyContent = $event.target.value" placeholder="写点回复..." type="textarea" rows="2"></md-outlined-text-field>
+              <div class="edit-actions">
+                <md-filled-tonal-button @click="cancelReply">取消</md-filled-tonal-button>
+                <md-filled-button @click="submitReply(comment.id)" :disabled="!replyContent">回复</md-filled-button>
+              </div>
+            </div>
+
+            <div v-if="comment.replies && comment.replies.length > 0" class="reply-list">
+              <div v-for="reply in comment.replies" :key="reply.id" class="reply-item">
+                <div class="reply-header">
+                  <span class="reply-nickname">{{ reply.nickname }}</span>
+                  <span class="reply-time">{{ reply.time }}</span>
+                </div>
+                <p class="reply-content">{{ reply.content }}</p>
+              </div>
+            </div>
+
+            <Divider />
           </div>
         </div>
       </div>
@@ -104,12 +128,15 @@ import Divider from './Divider.vue'
 
 const articles = ref([])
 const selectedArticle = ref(null)
-const likeCount = ref(0)
-const isLiked = ref(false)
+const articleLikeCount = ref(0)
+const articleLiked = ref(false)
 const comments = ref([])
 const commentNickname = ref('')
 const commentContent = ref('')
 const isAdmin = ref(false)
+const commentSortBy = ref('time')
+const replyingTo = ref(null)
+const replyContent = ref('')
 
 const LIKE_KEY = 'm3eblog_likes'
 const COMMENT_KEY = 'm3eblog_comments'
@@ -157,6 +184,18 @@ const renderedContent = computed(() => {
   return marked.parse(selectedArticle.value.raw)
 })
 
+const sortedComments = computed(() => {
+  const list = [...comments.value]
+  if (commentSortBy.value === 'hot') {
+    list.sort((a, b) => (b.likes || 0) - (a.likes || 0))
+  }
+  return list
+})
+
+function generateId() {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2, 8)
+}
+
 function openArticle(article) {
   selectedArticle.value = article
   loadArticleData()
@@ -171,14 +210,14 @@ function loadArticleData() {
   const slug = selectedArticle.value.slug
 
   const allLikes = JSON.parse(localStorage.getItem(LIKE_KEY) || '{}')
-  likeCount.value = allLikes[slug]?.count || 0
-  isLiked.value = allLikes[slug]?.liked || false
+  articleLikeCount.value = allLikes[slug]?.count || 0
+  articleLiked.value = allLikes[slug]?.liked || false
 
   const allComments = JSON.parse(localStorage.getItem(COMMENT_KEY) || '{}')
   comments.value = allComments[slug] || []
 }
 
-function toggleLike() {
+function toggleArticleLike() {
   if (!selectedArticle.value) return
   const slug = selectedArticle.value.slug
   const allLikes = JSON.parse(localStorage.getItem(LIKE_KEY) || '{}')
@@ -187,24 +226,21 @@ function toggleLike() {
     allLikes[slug] = { count: 0, liked: false }
   }
 
-  if (isLiked.value) {
+  if (articleLiked.value) {
     allLikes[slug].count--
     allLikes[slug].liked = false
-    isLiked.value = false
-    likeCount.value = allLikes[slug].count
+    articleLiked.value = false
   } else {
     allLikes[slug].count++
     allLikes[slug].liked = true
-    isLiked.value = true
-    likeCount.value = allLikes[slug].count
+    articleLiked.value = true
   }
-
+  articleLikeCount.value = allLikes[slug].count
   localStorage.setItem(LIKE_KEY, JSON.stringify(allLikes))
 }
 
 function submitComment() {
   if (!commentNickname.value || !commentContent.value || !selectedArticle.value) return
-
   const slug = selectedArticle.value.slug
   const allComments = JSON.parse(localStorage.getItem(COMMENT_KEY) || '{}')
 
@@ -213,9 +249,13 @@ function submitComment() {
   }
 
   allComments[slug].unshift({
+    id: generateId(),
     nickname: commentNickname.value,
     content: commentContent.value,
-    time: new Date().toLocaleString()
+    time: new Date().toLocaleString(),
+    likes: 0,
+    likedBy: [],
+    replies: []
   })
 
   localStorage.setItem(COMMENT_KEY, JSON.stringify(allComments))
@@ -224,16 +264,87 @@ function submitComment() {
   commentContent.value = ''
 }
 
-function deleteComment(index) {
+function deleteComment(id) {
   if (!selectedArticle.value) return
   const slug = selectedArticle.value.slug
   const allComments = JSON.parse(localStorage.getItem(COMMENT_KEY) || '{}')
 
   if (allComments[slug]) {
-    allComments[slug].splice(index, 1)
-    localStorage.setItem(COMMENT_KEY, JSON.stringify(allComments))
-    comments.value = allComments[slug]
+    const index = allComments[slug].findIndex(c => c.id === id)
+    if (index !== -1) {
+      allComments[slug].splice(index, 1)
+      localStorage.setItem(COMMENT_KEY, JSON.stringify(allComments))
+      comments.value = allComments[slug]
+    }
   }
+}
+
+function isCommentLiked(comment) {
+  return (comment.likedBy || []).includes(commentNickname.value)
+}
+
+function toggleCommentLike(comment) {
+  if (!commentNickname.value) {
+    alert('请先输入昵称')
+    return
+  }
+  if (!comment.likedBy) comment.likedBy = []
+  if (!comment.likes) comment.likes = 0
+
+  const idx = comment.likedBy.indexOf(commentNickname.value)
+  if (idx === -1) {
+    comment.likedBy.push(commentNickname.value)
+    comment.likes++
+  } else {
+    comment.likedBy.splice(idx, 1)
+    comment.likes--
+  }
+
+  const slug = selectedArticle.value.slug
+  const allComments = JSON.parse(localStorage.getItem(COMMENT_KEY) || '{}')
+  allComments[slug] = comments.value
+  localStorage.setItem(COMMENT_KEY, JSON.stringify(allComments))
+}
+
+function toggleReply(comment) {
+  if (replyingTo.value === comment.id) {
+    replyingTo.value = null
+    replyContent.value = ''
+  } else {
+    replyingTo.value = comment.id
+    replyContent.value = ''
+  }
+}
+
+function cancelReply() {
+  replyingTo.value = null
+  replyContent.value = ''
+}
+
+function submitReply(commentId) {
+  if (!replyContent.value) return
+  if (!commentNickname.value) {
+    alert('请先输入昵称')
+    return
+  }
+
+  const comment = comments.value.find(c => c.id === commentId)
+  if (comment) {
+    if (!comment.replies) comment.replies = []
+    comment.replies.push({
+      id: generateId(),
+      nickname: commentNickname.value,
+      content: replyContent.value,
+      time: new Date().toLocaleString()
+    })
+
+    const slug = selectedArticle.value.slug
+    const allComments = JSON.parse(localStorage.getItem(COMMENT_KEY) || '{}')
+    allComments[slug] = comments.value
+    localStorage.setItem(COMMENT_KEY, JSON.stringify(allComments))
+  }
+  replyingTo.value = null
+  replyContent.value = ''
 }
 </script>
 
@@ -357,6 +468,24 @@ function deleteComment(index) {
   gap: 12px;
   margin-bottom: 16px;
 }
+.sort-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+}
+.sort-label {
+  color: var(--md-sys-color-on-surface-variant);
+  font-size: 0.875rem;
+}
+.sort-bar md-filled-tonal-button {
+  --md-filled-tonal-button-container-color: var(--md-sys-color-surface-container-high);
+  --md-filled-tonal-button-label-text-color: var(--md-sys-color-on-surface-variant);
+}
+.sort-bar md-filled-tonal-button.active {
+  --md-filled-tonal-button-container-color: var(--md-sys-color-primary-container);
+  --md-filled-tonal-button-label-text-color: var(--md-sys-color-on-primary-container);
+}
 .empty-comments {
   text-align: center;
   color: var(--md-sys-color-on-surface-variant);
@@ -389,7 +518,71 @@ function deleteComment(index) {
   color: var(--md-sys-color-on-surface-variant);
   white-space: pre-wrap;
 }
+.comment-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 8px;
+}
+.like-count, .reply-count {
+  font-size: 0.8rem;
+  color: var(--md-sys-color-on-surface-variant);
+  min-width: 16px;
+}
+.action-btn {
+  opacity: 0.7;
+}
+.action-btn:hover {
+  opacity: 1;
+}
+.reply-btn {
+  --md-icon-button-icon-color: var(--md-sys-color-on-surface-variant);
+}
+.liked {
+  --md-icon-button-icon-color: #E91E63;
+  opacity: 1;
+}
 .delete-comment-btn {
   --md-icon-button-icon-color: var(--md-sys-color-error);
+}
+.reply-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+}
+.edit-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+.reply-list {
+  margin-top: 8px;
+  padding-left: 16px;
+  border-left: 2px solid var(--md-sys-color-outline-variant);
+}
+.reply-item {
+  padding: 8px 0;
+}
+.reply-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.reply-nickname {
+  font-weight: 500;
+  font-size: 0.875rem;
+  color: var(--md-sys-color-on-surface);
+}
+.reply-time {
+  font-size: 0.7rem;
+  color: var(--md-sys-color-on-surface-variant);
+}
+.reply-content {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--md-sys-color-on-surface-variant);
+  white-space: pre-wrap;
 }
 </style>

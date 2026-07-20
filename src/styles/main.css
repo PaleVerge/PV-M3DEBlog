@@ -105,11 +105,13 @@
 body {
   margin: 0;
   font-family: 'Roboto', 'Noto Sans SC', sans-serif;
-  background-color: var(--md-sys-color-surface);
+  background: linear-gradient(135deg, var(--md-sys-color-surface) 0%, var(--md-sys-color-surface-container) 100%);
+  background-attachment: fixed;
   color: var(--md-sys-color-on-surface);
   transition: background-color 0.3s ease, color 0.3s ease;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  min-height: 100vh;
 }
 
 /* ===== MD3 Tab Navigation ===== */
@@ -286,6 +288,21 @@ md-switch {
   max-width: 960px;
   margin: 0 auto;
   padding: 8px 16px 100px;
+}
+
+/* ===== Mobile Responsive ===== */
+@media (max-width: 600px) {
+  .content-container {
+    padding: 8px 12px 100px;
+  }
+}
+
+/* ===== PC Responsive ===== */
+@media (min-width: 1025px) {
+  .content-container {
+    max-width: 1200px;
+    padding: 8px 24px 100px;
+  }
 }
 
 /* ===== Page Title ===== */
