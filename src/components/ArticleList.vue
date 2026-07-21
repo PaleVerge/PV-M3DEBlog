@@ -106,10 +106,10 @@ const totalArticlePages = computed(() => Math.ceil(filteredArticles.value.length
 
 <style scoped>
 .panel {
-  background: var(--md-sys-color-surface-container-lowest);
+  background: var(--panel-bg);
   border-radius: var(--m3-shape-large);
   padding: 20px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
   border: 1px solid var(--md-sys-color-outline-variant);
 }
 .panel h3 {
@@ -141,6 +141,10 @@ const totalArticlePages = computed(() => Math.ceil(filteredArticles.value.length
   justify-content: center;
   gap: 12px;
   padding: 16px 0 8px;
+}
+.pagination md-filled-tonal-button {
+  --md-filled-tonal-button-container-color: var(--md-sys-color-primary-container);
+  --md-filled-tonal-button-label-text-color: var(--md-sys-color-on-primary-container);
 }
 .page-info { font-size: 0.875rem; color: var(--md-sys-color-on-surface-variant); }
 </style>

@@ -111,8 +111,8 @@ function goToSettings() {
 }
 
 .fab-main {
-  --md-fab-container-color: var(--md-sys-color-primary);
-  --md-fab-icon-color: var(--md-sys-color-on-primary);
+  --md-fab-container-color: var(--md-sys-color-surface-container-highest);
+  --md-fab-icon-color: var(--md-sys-color-primary);
 }
 
 .fab-wide {

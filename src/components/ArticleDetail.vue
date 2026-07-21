@@ -16,7 +16,7 @@
 
     <div class="fab-group">
       <md-fab class="fab-like" :class="{ liked: articleLiked }" @click="toggleArticleLike" aria-label="点赞">
-        <md-icon slot="icon" :style="articleLiked ? 'color:#E91E63' : ''">
+        <md-icon slot="icon">
           {{ articleLiked ? 'favorite' : 'favorite_border' }}
         </md-icon>
       </md-fab>
@@ -180,7 +180,7 @@ async function deleteComment(commentId) {
   align-items: center;
   gap: 12px;
   padding: 10px 24px;
-  background: var(--md-sys-color-surface-container-lowest);
+  background: var(--panel-bg);
   border-bottom: 1px solid var(--md-sys-color-outline-variant);
 }
 
@@ -254,13 +254,13 @@ async function deleteComment(commentId) {
 }
 
 .fab-like.liked {
-  --md-fab-container-color: #FCE4EC;
-  --md-fab-icon-color: #E91E63;
+  --md-fab-container-color: var(--md-sys-color-surface-container-highest);
+  --md-fab-icon-color: var(--md-sys-color-primary);
 }
 
 .fab-comment {
-  --md-fab-container-color: var(--md-sys-color-primary-container);
-  --md-fab-icon-color: var(--md-sys-color-on-primary-container);
+  --md-fab-container-color: var(--md-sys-color-surface-container-high);
+  --md-fab-icon-color: var(--md-sys-color-on-surface-variant);
 }
 
 .fab-badge {

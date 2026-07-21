@@ -5,6 +5,22 @@
       <md-switch :selected="darkMode" @change="toggleDarkMode"></md-switch>
     </div>
     <Divider />
+    <div class="theme-section">
+      <span class="setting-label">主题配色</span>
+      <div class="theme-grid">
+        <button
+          v-for="(theme, id) in themes"
+          :key="id"
+          class="theme-chip"
+          :class="{ active: currentTheme === id }"
+          @click="selectTheme(id)"
+        >
+          <span class="theme-dot" :style="{ background: theme.light.primary }"></span>
+          <span class="theme-name">{{ theme.name }}</span>
+        </button>
+      </div>
+    </div>
+    <Divider />
     <div class="admin-section">
       <template v-if="!isLoggedIn">
         <div class="login-form">
@@ -37,8 +53,11 @@
 import { ref, onMounted } from 'vue'
 import Divider from './Divider.vue'
 import { adminLoginAPI, isAdminAPI, adminLogoutAPI } from '../api/index'
+import { useTheme } from '../composables/useTheme'
 
 const DARK_MODE_KEY = 'm3eblog_dark_mode'
+
+const { themes, currentTheme, applyTheme } = useTheme()
 
 const darkMode = ref(false)
 const password = ref('')
@@ -59,6 +78,7 @@ onMounted(async () => {
     if (prefersDark) document.documentElement.classList.add('dark')
   }
   isLoggedIn.value = await isAdminAPI()
+  applyTheme(currentTheme.value)
 })
 
 const toggleDarkMode = (e) => {
@@ -70,6 +90,11 @@ const toggleDarkMode = (e) => {
     document.documentElement.classList.remove('dark')
     localStorage.setItem(DARK_MODE_KEY, 'false')
   }
+  applyTheme(currentTheme.value)
+}
+
+function selectTheme(id) {
+  applyTheme(id)
 }
 
 async function login() {
@@ -100,6 +125,46 @@ async function logout() {
   padding: 12px 0;
 }
 .setting-item span { color: var(--md-sys-color-on-surface); }
+.setting-label {
+  color: var(--md-sys-color-on-surface);
+  font-size: 0.875rem;
+  display: block;
+  margin-bottom: 10px;
+}
+.theme-section { padding: 8px 0; }
+.theme-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.theme-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: var(--m3-shape-small);
+  background: var(--md-sys-color-surface-container);
+  cursor: pointer;
+  font-size: 0.8rem;
+  color: var(--md-sys-color-on-surface);
+  transition: all 0.2s;
+}
+.theme-chip:hover {
+  background: var(--md-sys-color-surface-container-high);
+}
+.theme-chip.active {
+  border-color: var(--md-sys-color-primary);
+  background: var(--md-sys-color-primary-container);
+  color: var(--md-sys-color-on-primary-container);
+}
+.theme-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.theme-name { white-space: nowrap; }
 .admin-section { margin-top: 4px; }
 .login-form { display: flex; flex-direction: column; gap: 12px; padding: 8px 0; }
 .error-tip { color: var(--md-sys-color-error); margin: 0; font-size: 0.8rem; }
@@ -110,5 +175,9 @@ async function logout() {
   padding: 8px 0;
   color: var(--md-sys-color-on-surface-variant);
   font-size: 0.875rem;
+}
+.admin-info md-filled-tonal-button {
+  --md-filled-tonal-button-container-color: var(--md-sys-color-primary-container);
+  --md-filled-tonal-button-label-text-color: var(--md-sys-color-on-primary-container);
 }
 </style>

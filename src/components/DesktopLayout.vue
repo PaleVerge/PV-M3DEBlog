@@ -33,7 +33,7 @@
           <Messages compact />
         </div>
         <div class="panel panel-compact">
-          <Friend />
+          <Friend compact />
         </div>
         <div class="panel">
           <Contact />
@@ -100,7 +100,7 @@ onMounted(async () => {
 .desktop-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 16px;
   padding: 8px 24px;
   background: var(--header-bg);
   color: var(--header-fg);
@@ -114,6 +114,7 @@ onMounted(async () => {
   display: flex;
   align-items: baseline;
   gap: 12px;
+  flex-shrink: 0;
 }
 
 .site-title {
@@ -130,11 +131,12 @@ onMounted(async () => {
 
 .header-center {
   flex: 1;
-  max-width: 400px;
-  margin: 0 24px;
+  max-width: 260px;
+  min-width: 0;
 }
 
 .header-center :deep(md-outlined-text-field) {
+  --md-outlined-text-field-container-shape: var(--m3-shape-full);
   --md-outlined-text-field-container-color: rgba(255, 255, 255, 0.15);
   --md-outlined-text-field-label-text-color: rgba(255, 255, 255, 0.7);
   --md-outlined-text-field-input-text-color: white;
@@ -162,6 +164,8 @@ onMounted(async () => {
 .header-right {
   display: flex;
   gap: 8px;
+  flex-shrink: 0;
+  margin-left: auto;
 }
 
 .header-right md-icon-button {
@@ -205,10 +209,10 @@ onMounted(async () => {
 }
 
 .panel {
-  background: var(--md-sys-color-surface-container-lowest);
+  background: var(--panel-bg);
   border-radius: var(--m3-shape-large);
   padding: 20px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
   border: 1px solid var(--md-sys-color-outline-variant);
 }
 

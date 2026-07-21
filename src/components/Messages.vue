@@ -13,7 +13,7 @@
       <div slot="content" class="dialog-body">
         <div class="message-form">
           <md-outlined-text-field label="昵称" :value="nickname" @input="nickname = $event.target.value" placeholder="你的昵称"></md-outlined-text-field>
-          <md-outlined-text-field label="留言" :value="content" @input="content = $event.target.value" placeholder="说点什么吧..." type="textarea" rows="3"></md-outlined-text-field>
+          <md-outlined-text-field label="留言" :value="content" @input="content = $event.target.value" placeholder="说点什么吧..." type="textarea" rows="1"></md-outlined-text-field>
           <md-filled-button @click="submitMessage" :disabled="!nickname || !content">发送留言</md-filled-button>
         </div>
         <Divider />
@@ -43,7 +43,7 @@
             <p class="message-content">{{ msg.content }}</p>
             <div class="message-actions">
               <md-icon-button @click="toggleLike(msg)" class="action-btn">
-                <md-icon :style="isLiked(msg) ? 'color:#E91E63' : ''">{{ isLiked(msg) ? 'favorite' : 'favorite_border' }}</md-icon>
+                <md-icon :style="isLiked(msg) ? 'color:var(--md-sys-color-primary)' : ''">{{ isLiked(msg) ? 'favorite' : 'favorite_border' }}</md-icon>
               </md-icon-button>
               <span class="like-count">{{ msg.likes || 0 }}</span>
             </div>
@@ -59,7 +59,10 @@
 
   <template v-else>
     <div class="messages-container">
-      <h2>留言板</h2>
+      <div class="section-header">
+        <md-icon class="section-icon">forum</md-icon>
+        <h2>留言板</h2>
+      </div>
       <Divider />
       <div class="message-form">
         <md-outlined-text-field label="昵称" :value="nickname" @input="nickname = $event.target.value" placeholder="你的昵称"></md-outlined-text-field>
@@ -113,7 +116,7 @@
           </template>
           <div class="message-actions">
             <md-icon-button @click="toggleLike(msg)" class="action-btn">
-              <md-icon :style="isLiked(msg) ? 'color:#E91E63' : ''">{{ isLiked(msg) ? 'favorite' : 'favorite_border' }}</md-icon>
+              <md-icon :style="isLiked(msg) ? 'color:var(--md-sys-color-primary)' : ''">{{ isLiked(msg) ? 'favorite' : 'favorite_border' }}</md-icon>
             </md-icon-button>
             <span class="like-count">{{ msg.likes || 0 }}</span>
             <md-icon-button @click="toggleReply(msg)" class="action-btn reply-btn">
@@ -253,6 +256,20 @@ async function submitReply(msgId) {
 </script>
 
 <style scoped>
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.section-icon {
+  color: var(--md-sys-color-primary);
+  font-size: 18px;
+}
+.section-header h2 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 500;
+}
 .msg-compact {
   display: flex;
   align-items: center;
@@ -271,7 +288,11 @@ async function submitReply(msgId) {
   min-width: min(90vw, 560px);
 }
 
-.dialog-body { max-height: 60vh; overflow-y: auto; }
+.dialog-body {
+  max-height: 55vh;
+  overflow-y: auto;
+  min-height: 120px;
+}
 
 .messages-container { max-width: 600px; margin: 0 auto; padding: 8px 0; }
 .message-form { display: flex; flex-direction: column; gap: 12px; margin-bottom: 12px; }

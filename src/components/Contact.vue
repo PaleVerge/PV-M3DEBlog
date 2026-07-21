@@ -1,6 +1,9 @@
 <template>
   <div class="contact-container">
-    <h2>联系作者</h2>
+    <div class="contact-header">
+      <md-icon class="contact-icon">alternate_email</md-icon>
+      <h2>联系作者</h2>
+    </div>
     <Divider />
     <md-list>
       <md-list-item type="link" @click="openEmail">
@@ -33,33 +36,52 @@
         <md-icon slot="end">open_in_new</md-icon>
       </md-list-item>
     </md-list>
+
+    <md-dialog :open="showToast" @close="showToast = false">
+      <div slot="content" class="toast-content">
+        <md-icon class="toast-icon">check_circle</md-icon>
+        <span>{{ toastMsg }}</span>
+      </div>
+      <div slot="actions">
+        <md-filled-button @click="showToast = false">好的</md-filled-button>
+      </div>
+    </md-dialog>
   </div>
 </template>
 
 <script setup>
+import { ref } from 'vue'
 import Divider from './Divider.vue'
+
+const showToast = ref(false)
+const toastMsg = ref('')
+
+function showCopyToast(msg) {
+  toastMsg.value = msg
+  showToast.value = true
+}
 
 function openEmail() {
   navigator.clipboard.writeText('fnme3706679@gmail.com').then(() => {
-    alert('邮箱已复制到剪贴板：fnme3706679@gmail.com')
+    showCopyToast('邮箱已复制')
   }).catch(() => {
-    alert('邮箱：fnme3706679@gmail.com')
+    showCopyToast('fnme3706679@gmail.com')
   })
 }
 
 function copyQQ() {
   navigator.clipboard.writeText('574746791').then(() => {
-    alert('QQ号已复制到剪贴板：574746791\n请打开QQ添加好友')
+    showCopyToast('QQ号已复制')
   }).catch(() => {
-    alert('QQ号：574746791')
+    showCopyToast('574746791')
   })
 }
 
 function copyWeChat() {
   navigator.clipboard.writeText('distandce').then(() => {
-    alert('微信ID已复制到剪贴板：distandce\n请打开微信添加好友')
+    showCopyToast('微信ID已复制')
   }).catch(() => {
-    alert('微信ID：distandce')
+    showCopyToast('distandce')
   })
 }
 </script>
@@ -69,5 +91,29 @@ function copyWeChat() {
   max-width: 600px;
   margin: 0 auto;
   padding: 8px 0;
+}
+.contact-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.contact-icon {
+  color: var(--md-sys-color-primary);
+  font-size: 18px;
+}
+.contact-header h2 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 500;
+}
+.toast-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+  font-size: 0.9rem;
+}
+.toast-icon {
+  color: var(--md-sys-color-primary);
 }
 </style>

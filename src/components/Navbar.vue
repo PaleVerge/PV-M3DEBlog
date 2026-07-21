@@ -36,14 +36,11 @@ const currentComponent = computed(() => tabs[activeIndex.value] || Home)
 
 <template>
   <div class="mobile-nav">
-    <div class="nav-header">
-      <h1 class="nav-title">M3DEBlog</h1>
-    </div>
-    <md-tabs :active-tab-index="activeIndex" @change="handleTabChange">
+    <md-tabs :active-tab-index="activeIndex" @change="handleTabChange" class="capsule-tabs">
       <md-primary-tab>主页</md-primary-tab>
       <md-primary-tab>文章</md-primary-tab>
-      <md-primary-tab>友情链接</md-primary-tab>
-      <md-primary-tab>联系作者</md-primary-tab>
+      <md-primary-tab>友链</md-primary-tab>
+      <md-primary-tab>联系</md-primary-tab>
       <md-primary-tab>留言</md-primary-tab>
     </md-tabs>
   </div>
@@ -70,22 +67,17 @@ const currentComponent = computed(() => tabs[activeIndex.value] || Home)
   position: sticky;
   top: 0;
   z-index: 50;
+  padding: 6px 10px;
+  background: var(--md-sys-color-surface);
 }
 
-.nav-header {
-  background: var(--header-bg);
-  padding: 8px 16px 0;
-}
-
-.nav-title {
-  color: var(--header-fg);
-  font-size: 1.25rem;
-  font-weight: 500;
-  margin: 0;
+.capsule-tabs {
+  border-radius: var(--m3-shape-full) !important;
+  overflow: hidden;
 }
 
 .content-container {
-  padding: 8px 0;
+  padding: 4px 0;
 }
 
 .settings-dialog {

@@ -1,7 +1,10 @@
 <template>
   <div class="article-container">
     <template v-if="!selectedArticle">
-      <h2>文章</h2>
+      <div class="section-header">
+        <md-icon class="section-icon">article</md-icon>
+        <h2>文章</h2>
+      </div>
       <Divider />
       <div class="search-bar">
         <md-outlined-text-field label="搜索文章" :value="searchQuery" @input="searchQuery = $event.target.value" placeholder="输入标题搜索...">
@@ -44,7 +47,7 @@
 
       <div class="article-actions">
         <md-icon-button @click="toggleArticleLike" class="like-btn">
-          <md-icon :style="articleLiked ? 'color:#E91E63' : ''">{{ articleLiked ? 'favorite' : 'favorite_border' }}</md-icon>
+          <md-icon :style="articleLiked ? 'color:var(--md-sys-color-primary)' : ''">{{ articleLiked ? 'favorite' : 'favorite_border' }}</md-icon>
         </md-icon-button>
         <span class="like-count">{{ articleLikeCount }} 赞</span>
       </div>
@@ -90,7 +93,7 @@
 
             <div class="comment-actions">
               <md-icon-button @click="toggleCommentLike(comment)" class="action-btn">
-                <md-icon :style="isCommentLiked(comment) ? 'color:#E91E63' : ''">{{ isCommentLiked(comment) ? 'favorite' : 'favorite_border' }}</md-icon>
+                <md-icon :style="isCommentLiked(comment) ? 'color:var(--md-sys-color-primary)' : ''">{{ isCommentLiked(comment) ? 'favorite' : 'favorite_border' }}</md-icon>
               </md-icon-button>
               <span class="like-count">{{ comment.likes || 0 }}</span>
               <md-icon-button @click="toggleReply(comment)" class="action-btn reply-btn">
@@ -339,6 +342,20 @@ function submitReply(commentId) {
   margin: 0 auto;
   padding: 8px 0;
 }
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.section-icon {
+  color: var(--md-sys-color-primary);
+  font-size: 18px;
+}
+.section-header h2 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 500;
+}
 .article-item {
   cursor: pointer;
 }
@@ -347,6 +364,7 @@ function submitReply(commentId) {
 }
 .search-bar md-outlined-text-field {
   width: 100%;
+  --md-outlined-text-field-container-shape: var(--m3-shape-full);
 }
 .back-btn {
   margin-bottom: 8px;
