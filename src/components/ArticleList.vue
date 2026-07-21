@@ -3,11 +3,11 @@
     <div class="panel-header">
       <h3>文章</h3>
       <div class="sort-buttons">
-        <md-filled-tonal-button :class="{ active: articleSort === 'time' }" @click="articleSort = 'time'">
+        <md-filled-tonal-button :style="articleSort === 'time' ? activeSortStyle : baseSortStyle" @click="articleSort = 'time'">
           <md-icon slot="icon">schedule</md-icon>
           最新
         </md-filled-tonal-button>
-        <md-filled-tonal-button :class="{ active: articleSort === 'hot' }" @click="articleSort = 'hot'">
+        <md-filled-tonal-button :style="articleSort === 'hot' ? activeSortStyle : baseSortStyle" @click="articleSort = 'hot'">
           <md-icon slot="icon">local_fire_department</md-icon>
           热门
         </md-filled-tonal-button>
@@ -47,7 +47,10 @@
 import { ref, computed, watch, onMounted } from 'vue'
 import Divider from './Divider.vue'
 import articlesMeta from 'virtual:articles-meta'
-import { getArticleLikes } from '../api/index'
+import { getArticleLikes, getArticleComments } from '../api/index'
+
+const baseSortStyle = '--md-filled-tonal-button-container-color:var(--md-sys-color-surface-container-high);--md-filled-tonal-button-label-text-color:var(--md-sys-color-on-surface-variant)'
+const activeSortStyle = '--md-filled-tonal-button-container-color:var(--md-sys-color-primary-container);--md-filled-tonal-button-label-text-color:var(--md-sys-color-on-primary-container)'
 
 const props = defineProps({
   searchQuery: {
@@ -60,15 +63,19 @@ defineEmits(['select'])
 
 const articleSort = ref('time')
 const articlePage = ref(1)
-const articlesPerPage = 5
+const articlesPerPage = 6
 const articles = ref([])
 
 onMounted(async () => {
   const list = [...articlesMeta]
-  // Fetch likes count for sorting
   for (const article of list) {
-    const data = await getArticleLikes(article.slug)
-    article.likes = data.count || 0
+    const [likesData, comments] = await Promise.all([
+      getArticleLikes(article.slug),
+      getArticleComments(article.slug)
+    ])
+    article.likes = likesData.count || 0
+    article.commentCount = comments.length || 0
+    article.hot = article.likes + article.commentCount
   }
   list.sort((a, b) => (b.date > a.date ? 1 : -1))
   articles.value = list
@@ -80,7 +87,7 @@ const filteredArticles = computed(() => {
     const q = props.searchQuery.toLowerCase()
     list = list.filter(a => a.title.toLowerCase().includes(q))
   }
-  if (articleSort.value === 'hot') list.sort((a, b) => b.likes - a.likes)
+  if (articleSort.value === 'hot') list.sort((a, b) => b.hot - a.hot)
   else list.sort((a, b) => (b.date > a.date ? 1 : -1))
   return list
 })
@@ -125,10 +132,6 @@ const totalArticlePages = computed(() => Math.ceil(filteredArticles.value.length
   --md-filled-tonal-button-container-color: var(--md-sys-color-surface-container-high);
   --md-filled-tonal-button-label-text-color: var(--md-sys-color-on-surface-variant);
   font-size: 0.75rem;
-}
-.sort-buttons md-filled-tonal-button.active {
-  --md-filled-tonal-button-container-color: var(--md-sys-color-primary-container);
-  --md-filled-tonal-button-label-text-color: var(--md-sys-color-on-primary-container);
 }
 .article-item { cursor: pointer; }
 .empty-state { text-align: center; color: var(--md-sys-color-on-surface-variant); padding: 24px; }

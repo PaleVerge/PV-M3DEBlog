@@ -25,14 +25,14 @@
       </aside>
 
       <section class="content-main">
-        <ArticleList :searchQuery="searchQuery" @select="openArticle" />
+        <ArticleList :searchQuery="searchQuery" @select="selectArticle" />
       </section>
 
       <aside class="sidebar-right">
-        <div class="panel">
-          <Messages />
+        <div class="panel panel-compact">
+          <Messages compact />
         </div>
-        <div class="panel">
+        <div class="panel panel-compact">
           <Friend />
         </div>
         <div class="panel">
@@ -41,13 +41,9 @@
       </aside>
     </main>
 
-    <ArticleDetail 
-      v-if="selectedArticle" 
-      :article="selectedArticle" 
-      @close="selectedArticle = null" 
-    />
+    <ArticleDetail v-if="selectedArticle" />
 
-    <md-dialog :open="showSettings" @close="showSettings = false">
+    <md-dialog :open="showSettings" @close="showSettings = false" class="settings-dialog">
       <div slot="headline">设置</div>
       <div slot="content" class="settings-content">
         <Settings />
@@ -70,9 +66,11 @@ import Messages from './Messages.vue'
 import Contact from './Contact.vue'
 import Friend from './Friend.vue'
 import Settings from './Settings.vue'
+import { useArticleState } from '../composables/useArticleState'
+
+const { selectedArticle, selectArticle } = useArticleState()
 
 const searchQuery = ref('')
-const selectedArticle = ref(null)
 const showSettings = ref(false)
 const homeContent = ref('')
 
@@ -80,20 +78,15 @@ onMounted(async () => {
   try {
     const res = await fetch('/content/home.md')
     const md = await res.text()
-    
-    // Quick extract frontmatter content
+
     const match = md.match(/^---\s*\n([\s\S]*?)\n---\s*\n([\s\S]*)$/)
     const content = match ? match[2] : md
-    
+
     homeContent.value = marked.parse(content)
   } catch {
     homeContent.value = '<p>加载中...</p>'
   }
 })
-
-function openArticle(article) {
-  selectedArticle.value = article
-}
 </script>
 
 <style scoped>
@@ -108,13 +101,13 @@ function openArticle(article) {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 24px;
-  background: linear-gradient(90deg, #6750A4 0%, #4F378B 100%);
-  color: white;
+  padding: 8px 24px;
+  background: var(--header-bg);
+  color: var(--header-fg);
   position: sticky;
   top: 0;
   z-index: 100;
-  box-shadow: 0 2px 8px rgba(103, 80, 164, 0.3);
+  box-shadow: var(--m3-elevation-2);
 }
 
 .header-left {
@@ -127,7 +120,7 @@ function openArticle(article) {
   font-size: 1.5rem;
   font-weight: 500;
   margin: 0;
-  color: white;
+  color: var(--header-fg);
 }
 
 .site-subtitle {
@@ -148,8 +141,17 @@ function openArticle(article) {
   --md-outlined-text-field-hover-label-text-color: white;
   --md-outlined-text-field-hover-outline-color: rgba(255, 255, 255, 0.5);
   --md-outlined-text-field-focus-outline-color: white;
+  --md-outlined-text-field-focus-label-text-color: white;
   --md-outlined-text-field-caret-color: white;
   --md-outlined-text-field-leading-icon-color: rgba(255, 255, 255, 0.7);
+}
+
+.header-center :deep(md-outlined-text-field)::part(input) {
+  color: white;
+}
+
+.header-center :deep(md-outlined-text-field)::placeholder {
+  color: rgba(255, 255, 255, 0.5);
 }
 
 .header-center :deep(md-outlined-text-field:focus-within) {
@@ -163,7 +165,7 @@ function openArticle(article) {
 }
 
 .header-right md-icon-button {
-  --md-icon-button-icon-color: white;
+  --md-icon-button-icon-color: var(--header-fg);
 }
 
 .desktop-main {
@@ -174,7 +176,7 @@ function openArticle(article) {
   max-width: 1400px;
   margin: 0 auto;
   width: 100%;
-  height: calc(100vh - 56px);
+  height: calc(100vh - 44px);
   overflow: hidden;
 }
 
@@ -210,6 +212,10 @@ function openArticle(article) {
   border: 1px solid var(--md-sys-color-outline-variant);
 }
 
+.panel-compact {
+  padding: 8px 12px;
+}
+
 .panel h3 {
   color: var(--md-sys-color-on-surface);
   font-size: 1rem;
@@ -230,6 +236,10 @@ function openArticle(article) {
 
 .hidden {
   display: none !important;
+}
+
+.settings-dialog {
+  min-width: min(90vw, 480px);
 }
 
 @media (max-width: 1024px) {

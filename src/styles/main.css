@@ -59,10 +59,12 @@
   --md-sys-color-inverse-on-surface: #F4EFF4;
   --md-sys-color-inverse-primary: #D0BCFF;
   --md-sys-color-surface-tint: #6750A4;
+
+  --header-bg: #6750A4;
+  --header-fg: #FFFFFF;
 }
 
 .dark {
-  /* MD3 Dark Theme - Purple */
   --md-sys-color-primary: #D0BCFF;
   --md-sys-color-on-primary: #381E72;
   --md-sys-color-primary-container: #4F378B;
@@ -79,8 +81,8 @@
   --md-sys-color-on-error: #601410;
   --md-sys-color-error-container: #8C1D18;
   --md-sys-color-on-error-container: #F9DEDC;
-  --md-sys-color-surface: #1C1B1F;
-  --md-sys-color-on-surface: #E6E1E5;
+  --md-sys-color-surface: #141218;
+  --md-sys-color-on-surface: #E6E0E9;
   --md-sys-color-surface-variant: #49454F;
   --md-sys-color-on-surface-variant: #CAC4D0;
   --md-sys-color-surface-container-lowest: #0F0D13;
@@ -90,10 +92,13 @@
   --md-sys-color-surface-container-highest: #36343B;
   --md-sys-color-outline: #938F99;
   --md-sys-color-outline-variant: #49454F;
-  --md-sys-color-inverse-surface: #E6E1E5;
+  --md-sys-color-inverse-surface: #E6E0E9;
   --md-sys-color-inverse-on-surface: #313033;
   --md-sys-color-inverse-primary: #6750A4;
   --md-sys-color-surface-tint: #D0BCFF;
+
+  --header-bg: #4F378B;
+  --header-fg: #EADDFF;
 
   color-scheme: dark;
 }
@@ -119,39 +124,32 @@ md-tabs {
   position: sticky;
   top: 0;
   z-index: 50;
-  background-color: #6750A4 !important;
-  --md-tabs-active-indicator-color: #FFFFFF;
-  --md-sys-color-surface: #6750A4;
-  --md-sys-color-on-surface: #FFFFFF;
+  background-color: var(--header-bg) !important;
+  --md-tabs-active-indicator-color: var(--header-fg);
+  --md-sys-color-surface: var(--header-bg);
+  --md-sys-color-on-surface: var(--header-fg);
   --md-sys-color-on-surface-variant: rgba(255, 255, 255, 0.7);
 }
 
 md-primary-tab {
-  --md-primary-tab-active-indicator-color: #FFFFFF !important;
+  --md-primary-tab-active-indicator-color: var(--header-fg) !important;
   --md-primary-tab-label-text-color: rgba(255, 255, 255, 0.7) !important;
-  --md-primary-tab-active-label-text-color: #FFFFFF !important;
-  --md-primary-tab-hover-label-text-color: #FFFFFF !important;
-  --md-primary-tab-focus-label-text-color: #FFFFFF !important;
+  --md-primary-tab-active-label-text-color: var(--header-fg) !important;
+  --md-primary-tab-hover-label-text-color: var(--header-fg) !important;
+  --md-primary-tab-focus-label-text-color: var(--header-fg) !important;
   --md-primary-tab-icon-color: rgba(255, 255, 255, 0.7) !important;
-  --md-primary-tab-active-icon-color: #FFFFFF !important;
-  --md-primary-tab-hover-icon-color: #FFFFFF !important;
-  --md-primary-tab-focus-icon-color: #FFFFFF !important;
+  --md-primary-tab-active-icon-color: var(--header-fg) !important;
+  --md-primary-tab-hover-icon-color: var(--header-fg) !important;
+  --md-primary-tab-focus-icon-color: var(--header-fg) !important;
   color: rgba(255, 255, 255, 0.7) !important;
 }
 
 md-primary-tab[active] {
-  color: #FFFFFF !important;
+  color: var(--header-fg) !important;
 }
 
 md-primary-tab:hover {
-  color: #FFFFFF !important;
-}
-
-.dark md-tabs {
-  background-color: #4F378B !important;
-  --md-sys-color-surface: #4F378B;
-  --md-sys-color-on-surface: #FFFFFF;
-  --md-sys-color-on-surface-variant: rgba(255, 255, 255, 0.7);
+  color: var(--header-fg) !important;
 }
 
 .md-tabs__tab-scroller {

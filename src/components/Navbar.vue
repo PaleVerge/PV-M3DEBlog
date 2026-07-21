@@ -17,8 +17,9 @@ const handleTabChange = (event: Event) => {
 
 function handleNavigate(e: CustomEvent) {
   const target = e.detail
-  if (target === 'messages') activeIndex.value = 3
+  if (target === 'messages') activeIndex.value = 4
   else if (target === 'settings') showSettings.value = true
+  else if (target === 'articles') activeIndex.value = 1
 }
 
 onMounted(() => {
@@ -29,16 +30,8 @@ onUnmounted(() => {
   window.removeEventListener('navigate-to', handleNavigate as EventListener)
 })
 
-const currentComponent = computed(() => {
-  switch (activeIndex.value) {
-    case 0: return Home
-    case 1: return Article
-    case 2: return Friend
-    case 3: return Contact
-    case 4: return Messages
-    default: return Home
-  }
-})
+const tabs = [Home, Article, Friend, Contact, Messages]
+const currentComponent = computed(() => tabs[activeIndex.value] || Home)
 </script>
 
 <template>
@@ -56,12 +49,12 @@ const currentComponent = computed(() => {
   </div>
 
   <div class="content-container">
-    <Transition name="fade" mode="out-in">
-      <component :is="currentComponent" :key="activeIndex" />
-    </Transition>
+    <KeepAlive>
+      <component :is="currentComponent" />
+    </KeepAlive>
   </div>
 
-  <md-dialog :open="showSettings" @close="showSettings = false">
+  <md-dialog :open="showSettings" @close="showSettings = false" class="settings-dialog">
     <div slot="headline">设置</div>
     <div slot="content">
       <Settings />
@@ -80,16 +73,12 @@ const currentComponent = computed(() => {
 }
 
 .nav-header {
-  background: linear-gradient(90deg, #6750A4 0%, #4F378B 100%);
-  padding: 12px 16px 0;
-}
-
-.dark .nav-header {
-  background: linear-gradient(90deg, #4F378B 0%, #381E72 100%);
+  background: var(--header-bg);
+  padding: 8px 16px 0;
 }
 
 .nav-title {
-  color: white;
+  color: var(--header-fg);
   font-size: 1.25rem;
   font-weight: 500;
   margin: 0;
@@ -97,5 +86,9 @@ const currentComponent = computed(() => {
 
 .content-container {
   padding: 8px 0;
+}
+
+.settings-dialog {
+  min-width: min(90vw, 480px);
 }
 </style>

@@ -33,9 +33,10 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, watch, onMounted, onUnmounted } from 'vue'
 import Navbar from './components/Navbar.vue'
 import DesktopLayout from './components/DesktopLayout.vue'
+import { useArticleState } from './composables/useArticleState'
 import '@material/web/fab/fab.js'
 import '@material/web/icon/icon.js'
 import '@material/web/iconbutton/icon-button.js'
@@ -48,12 +49,20 @@ import '@material/web/textfield/outlined-text-field.js'
 import '@material/web/switch/switch.js'
 import '@material/web/dialog/dialog.js'
 
+const { selectedArticle } = useArticleState()
+
 const isMobile = ref(true)
 const fabExpanded = ref(false)
 
 function checkScreen() {
   isMobile.value = window.innerWidth <= 1024
 }
+
+watch(isMobile, (mobile, prev) => {
+  if (mobile && !prev && selectedArticle.value) {
+    window.dispatchEvent(new CustomEvent('navigate-to', { detail: 'articles' }))
+  }
+})
 
 onMounted(() => {
   checkScreen()

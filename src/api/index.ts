@@ -1,90 +1,152 @@
 /**
  * 博客数据 API 抽象层
- * 目前使用 localStorage 进行本地模拟 (Mock)。
- * 既然你有自己的服务器，未来你只需要将这里的逻辑替换为真实的 fetch/axios 请求即可，
- * 例如： `return fetch('/api/messages').then(res => res.json())`
+ * 连接到后端服务器
  */
 
-const LIKE_KEY = 'm3eblog_likes'
-const COMMENT_KEY = 'm3eblog_comments'
-const MSG_KEY = 'm3eblog_messages'
-const ADMIN_AUTH_KEY = 'm3eblog_admin_token'
+import { request } from './config';
 
 // --- 留言板 API ---
 export async function getMessages() {
-  const stored = localStorage.getItem(MSG_KEY)
-  if (stored) {
-    try {
-      return JSON.parse(stored)
-    } catch {
-      return []
-    }
+  try {
+    return await request('/messages');
+  } catch (error) {
+    console.error('Failed to get messages:', error);
+    return [];
   }
-  return []
 }
 
 export async function saveMessages(messages) {
-  localStorage.setItem(MSG_KEY, JSON.stringify(messages))
+  // 这个函数在新的API设计中不需要，因为每个操作都是独立的
+  // 保留函数签名以保持兼容性
+  console.warn('saveMessages is deprecated in server mode');
+  return messages;
 }
 
 export async function addMessage(msg) {
-  const messages = await getMessages()
-  messages.unshift(msg)
-  await saveMessages(messages)
-  return msg
+  try {
+    return await request('/messages', {
+      method: 'POST',
+      body: JSON.stringify(msg),
+    });
+  } catch (error) {
+    console.error('Failed to add message:', error);
+    throw error;
+  }
 }
 
 // --- 文章点赞与评论 API ---
 export async function getArticleLikes(slug) {
-  const allLikes = JSON.parse(localStorage.getItem(LIKE_KEY) || '{}')
-  return allLikes[slug] || { count: 0, liked: false }
+  try {
+    return await request(`/articles/${slug}/likes`);
+  } catch (error) {
+    console.error('Failed to get article likes:', error);
+    return { count: 0, liked: false };
+  }
 }
 
 export async function toggleArticleLikeAPI(slug, currentLiked) {
-  const allLikes = JSON.parse(localStorage.getItem(LIKE_KEY) || '{}')
-  if (!allLikes[slug]) allLikes[slug] = { count: 0, liked: false }
-  
-  if (currentLiked) {
-    allLikes[slug].count = Math.max(0, allLikes[slug].count - 1)
-    allLikes[slug].liked = false
-  } else {
-    allLikes[slug].count++
-    allLikes[slug].liked = true
+  try {
+    return await request(`/articles/${slug}/likes`, {
+      method: 'POST',
+      body: JSON.stringify({ currentLiked }),
+    });
+  } catch (error) {
+    console.error('Failed to toggle article like:', error);
+    throw error;
   }
-  
-  localStorage.setItem(LIKE_KEY, JSON.stringify(allLikes))
-  return allLikes[slug]
 }
 
 export async function getArticleComments(slug) {
-  const allComments = JSON.parse(localStorage.getItem(COMMENT_KEY) || '{}')
-  return allComments[slug] || []
+  try {
+    return await request(`/articles/${slug}/comments`);
+  } catch (error) {
+    console.error('Failed to get article comments:', error);
+    return [];
+  }
 }
 
 export async function addArticleComment(slug, comment) {
-  const allComments = JSON.parse(localStorage.getItem(COMMENT_KEY) || '{}')
-  if (!allComments[slug]) allComments[slug] = []
-  allComments[slug].unshift(comment)
-  localStorage.setItem(COMMENT_KEY, JSON.stringify(allComments))
-  return allComments[slug]
+  try {
+    return await request(`/articles/${slug}/comments`, {
+      method: 'POST',
+      body: JSON.stringify(comment),
+    });
+  } catch (error) {
+    console.error('Failed to add article comment:', error);
+    throw error;
+  }
+}
+
+export async function deleteMessageAPI(id) {
+  try {
+    return await request(`/messages/${id}`, { method: 'DELETE' });
+  } catch (error) {
+    console.error('Failed to delete message:', error);
+    throw error;
+  }
+}
+
+export async function deleteArticleCommentAPI(slug, commentId) {
+  try {
+    return await request(`/articles/${slug}/comments/${commentId}`, { method: 'DELETE' });
+  } catch (error) {
+    console.error('Failed to delete comment:', error);
+    throw error;
+  }
 }
 
 // --- 管理员鉴权 API ---
 export async function adminLoginAPI(password) {
-  // 注意：在真实的服务器环境中，这里应该发送 POST 请求到后端验证密码，而不是在前端比对
-  const expectedPassword = import.meta.env.VITE_ADMIN_PASSWORD || 'm3de2025'
-  if (password === expectedPassword) {
-    sessionStorage.setItem(ADMIN_AUTH_KEY, 'true')
-    return true
+  try {
+    const result = await request('/admin/login', {
+      method: 'POST',
+      body: JSON.stringify({ password }),
+    });
+    
+    if (result.success && result.sessionId) {
+      sessionStorage.setItem('m3eblog_admin_session', result.sessionId);
+      sessionStorage.setItem('m3eblog_admin_token', 'true');
+      return true;
+    }
+    return false;
+  } catch (error) {
+    console.error('Admin login failed:', error);
+    return false;
   }
-  return false
 }
 
 export async function isAdminAPI() {
-  // 真实环境应调用如 /api/admin/check 验证 token 是否有效
-  return sessionStorage.getItem(ADMIN_AUTH_KEY) === 'true'
+  try {
+    const sessionId = sessionStorage.getItem('m3eblog_admin_session');
+    if (!sessionId) {
+      return false;
+    }
+    
+    const result = await request(`/admin/check?session=${sessionId}`);
+    return result.isAdmin || false;
+  } catch (error) {
+    console.error('Admin check failed:', error);
+    return false;
+  }
 }
 
 export async function adminLogoutAPI() {
-  sessionStorage.removeItem(ADMIN_AUTH_KEY)
+  try {
+    const sessionId = sessionStorage.getItem('m3eblog_admin_session');
+    if (sessionId) {
+      await request('/admin/logout', {
+        method: 'POST',
+        body: JSON.stringify({ session: sessionId }),
+      });
+    }
+    
+    sessionStorage.removeItem('m3eblog_admin_session');
+    sessionStorage.removeItem('m3eblog_admin_token');
+    return true;
+  } catch (error) {
+    console.error('Admin logout failed:', error);
+    sessionStorage.removeItem('m3eblog_admin_session');
+    sessionStorage.removeItem('m3eblog_admin_token');
+    return false;
+  }
 }

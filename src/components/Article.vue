@@ -3,14 +3,19 @@
     <template v-if="!selectedArticle">
       <h2>文章</h2>
       <Divider />
-      <div v-if="articles.length === 0">
+      <div class="search-bar">
+        <md-outlined-text-field label="搜索文章" :value="searchQuery" @input="searchQuery = $event.target.value" placeholder="输入标题搜索...">
+          <md-icon slot="leading-icon">search</md-icon>
+        </md-outlined-text-field>
+      </div>
+      <div v-if="filteredArticles.length === 0">
         <md-list-item>
-          <div slot="supporting-text">暂无文章</div>
+          <div slot="supporting-text">{{ searchQuery ? '未找到匹配文章' : '暂无文章' }}</div>
         </md-list-item>
       </div>
       <md-list v-else>
         <md-list-item
-          v-for="article in articles"
+          v-for="article in filteredArticles"
           :key="article.slug"
           @click="openArticle(article)"
           class="article-item"
@@ -23,7 +28,7 @@
     </template>
 
     <template v-else>
-      <md-filled-button @click="backToList" class="back-btn">
+      <md-filled-button @click="clearArticle" class="back-btn">
         <md-icon slot="icon">arrow_back</md-icon>
         返回列表
       </md-filled-button>
@@ -38,8 +43,8 @@
       <Divider />
 
       <div class="article-actions">
-        <md-icon-button @click="toggleArticleLike" class="like-btn" :class="{ liked: articleLiked }">
-          <md-icon>{{ articleLiked ? 'favorite' : 'favorite_border' }}</md-icon>
+        <md-icon-button @click="toggleArticleLike" class="like-btn">
+          <md-icon :style="articleLiked ? 'color:#E91E63' : ''">{{ articleLiked ? 'favorite' : 'favorite_border' }}</md-icon>
         </md-icon-button>
         <span class="like-count">{{ articleLikeCount }} 赞</span>
       </div>
@@ -56,11 +61,11 @@
 
         <div class="sort-bar" v-if="comments.length > 1">
           <span class="sort-label">排序：</span>
-          <md-filled-tonal-button :class="{ active: commentSortBy === 'time' }" @click="commentSortBy = 'time'">
+          <md-filled-tonal-button :style="commentSortBy === 'time' ? activeSortStyle : baseSortStyle" @click="commentSortBy = 'time'">
             <md-icon slot="icon">schedule</md-icon>
             最新
           </md-filled-tonal-button>
-          <md-filled-tonal-button :class="{ active: commentSortBy === 'hot' }" @click="commentSortBy = 'hot'">
+          <md-filled-tonal-button :style="commentSortBy === 'hot' ? activeSortStyle : baseSortStyle" @click="commentSortBy = 'hot'">
             <md-icon slot="icon">local_fire_department</md-icon>
             热门
           </md-filled-tonal-button>
@@ -84,8 +89,8 @@
             <p class="comment-content">{{ comment.content }}</p>
 
             <div class="comment-actions">
-              <md-icon-button @click="toggleCommentLike(comment)" class="action-btn" :class="{ liked: isCommentLiked(comment) }">
-                <md-icon>{{ isCommentLiked(comment) ? 'favorite' : 'favorite_border' }}</md-icon>
+              <md-icon-button @click="toggleCommentLike(comment)" class="action-btn">
+                <md-icon :style="isCommentLiked(comment) ? 'color:#E91E63' : ''">{{ isCommentLiked(comment) ? 'favorite' : 'favorite_border' }}</md-icon>
               </md-icon-button>
               <span class="like-count">{{ comment.likes || 0 }}</span>
               <md-icon-button @click="toggleReply(comment)" class="action-btn reply-btn">
@@ -121,14 +126,20 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { marked } from 'marked'
 import Divider from './Divider.vue'
 import articlesMeta from 'virtual:articles-meta'
 import { getArticleLikes, toggleArticleLikeAPI, getArticleComments, addArticleComment, isAdminAPI } from '../api/index'
+import { useArticleState } from '../composables/useArticleState'
+
+const { selectedArticle, selectArticle, clearArticle, setArticleRaw, getArticleRaw } = useArticleState()
+
+const baseSortStyle = '--md-filled-tonal-button-container-color:var(--md-sys-color-surface-container-high);--md-filled-tonal-button-label-text-color:var(--md-sys-color-on-surface-variant)'
+const activeSortStyle = '--md-filled-tonal-button-container-color:var(--md-sys-color-primary-container);--md-filled-tonal-button-label-text-color:var(--md-sys-color-on-primary-container)'
 
 const articles = ref([])
-const selectedArticle = ref(null)
+const searchQuery = ref('')
 const articleLikeCount = ref(0)
 const articleLiked = ref(false)
 const comments = ref([])
@@ -157,8 +168,16 @@ onMounted(async () => {
 })
 
 const renderedContent = computed(() => {
-  if (!selectedArticle.value || !selectedArticle.value.raw) return ''
-  return marked.parse(selectedArticle.value.raw)
+  if (!selectedArticle.value) return ''
+  const raw = getArticleRaw(selectedArticle.value.slug)
+  if (!raw) return ''
+  return marked.parse(raw)
+})
+
+const filteredArticles = computed(() => {
+  if (!searchQuery.value) return articles.value
+  const q = searchQuery.value.toLowerCase()
+  return articles.value.filter(a => a.title.toLowerCase().includes(q))
 })
 
 const sortedComments = computed(() => {
@@ -169,39 +188,38 @@ const sortedComments = computed(() => {
   return list
 })
 
+watch(selectedArticle, async (article) => {
+  if (article) {
+    await loadArticleContent(article)
+    await loadArticleData(article.slug)
+  }
+})
+
+async function loadArticleContent(article) {
+  const slug = article.slug
+  if (getArticleRaw(slug)) return
+
+  const fetcher = mdModules[`/articles/${slug}.md`]
+  if (fetcher) {
+    let raw = await fetcher()
+    const match = raw.match(/^---\s*\n([\s\S]*?)\n---\s*\n([\s\S]*)$/)
+    if (match) raw = match[2]
+    setArticleRaw(slug, raw)
+  }
+}
+
 function generateId() {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 8)
 }
 
 async function openArticle(article) {
-  selectedArticle.value = article
-  if (!selectedArticle.value.raw) {
-    const fetcher = mdModules[`/articles/${article.slug}.md`]
-    if (fetcher) {
-      let raw = await fetcher()
-      // Remove frontmatter for rendering
-      const match = raw.match(/^---\s*\n([\s\S]*?)\n---\s*\n([\s\S]*)$/)
-      if (match) {
-        raw = match[2]
-      }
-      selectedArticle.value.raw = raw
-    }
-  }
-  await loadArticleData()
+  selectArticle(article)
 }
 
-function backToList() {
-  selectedArticle.value = null
-}
-
-async function loadArticleData() {
-  if (!selectedArticle.value) return
-  const slug = selectedArticle.value.slug
-
+async function loadArticleData(slug) {
   const likesData = await getArticleLikes(slug)
   articleLikeCount.value = likesData.count || 0
   articleLiked.value = likesData.liked || false
-
   comments.value = await getArticleComments(slug)
 }
 
@@ -209,7 +227,6 @@ async function toggleArticleLike() {
   if (!selectedArticle.value) return
   const slug = selectedArticle.value.slug
   const newData = await toggleArticleLikeAPI(slug, articleLiked.value)
-  
   articleLikeCount.value = newData.count
   articleLiked.value = newData.liked
 }
@@ -217,7 +234,7 @@ async function toggleArticleLike() {
 async function submitComment() {
   if (!commentNickname.value || !commentContent.value || !selectedArticle.value) return
   const slug = selectedArticle.value.slug
-  
+
   const newComment = {
     id: generateId(),
     nickname: commentNickname.value,
@@ -234,12 +251,10 @@ async function submitComment() {
 }
 
 function deleteComment(id) {
-  // In a real API, call api to delete comment
   if (!selectedArticle.value) return
   const index = comments.value.findIndex(c => c.id === id)
   if (index !== -1) {
     comments.value.splice(index, 1)
-    // LocalStorage fallback for delete
     const slug = selectedArticle.value.slug
     const allComments = JSON.parse(localStorage.getItem('m3eblog_comments') || '{}')
     if (allComments[slug]) {
@@ -270,7 +285,6 @@ function toggleCommentLike(comment) {
     comment.likes--
   }
 
-  // LocalStorage fallback
   const slug = selectedArticle.value.slug
   const allComments = JSON.parse(localStorage.getItem('m3eblog_comments') || '{}')
   allComments[slug] = comments.value
@@ -327,6 +341,12 @@ function submitReply(commentId) {
 }
 .article-item {
   cursor: pointer;
+}
+.search-bar {
+  margin: 8px 0 12px;
+}
+.search-bar md-outlined-text-field {
+  width: 100%;
 }
 .back-btn {
   margin-bottom: 8px;
@@ -417,9 +437,6 @@ function submitReply(commentId) {
 .like-btn {
   --md-icon-button-icon-color: var(--md-sys-color-on-surface-variant);
 }
-.like-btn.liked {
-  --md-icon-button-icon-color: #E91E63;
-}
 .like-count {
   color: var(--md-sys-color-on-surface-variant);
   font-size: 0.875rem;
@@ -452,10 +469,7 @@ function submitReply(commentId) {
 .sort-bar md-filled-tonal-button {
   --md-filled-tonal-button-container-color: var(--md-sys-color-surface-container-high);
   --md-filled-tonal-button-label-text-color: var(--md-sys-color-on-surface-variant);
-}
-.sort-bar md-filled-tonal-button.active {
-  --md-filled-tonal-button-container-color: var(--md-sys-color-primary-container);
-  --md-filled-tonal-button-label-text-color: var(--md-sys-color-on-primary-container);
+  font-size: 0.75rem;
 }
 .empty-comments {
   text-align: center;
@@ -508,10 +522,6 @@ function submitReply(commentId) {
 }
 .reply-btn {
   --md-icon-button-icon-color: var(--md-sys-color-on-surface-variant);
-}
-.liked {
-  --md-icon-button-icon-color: #E91E63;
-  opacity: 1;
 }
 .delete-comment-btn {
   --md-icon-button-icon-color: var(--md-sys-color-error);

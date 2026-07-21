@@ -34,3 +34,13 @@ coverage
 
 # Vitest
 __screenshots__/
+
+# Server
+server/node_modules/
+server/data/*.json
+server/.env
+
+# Environment variables
+.env
+.env.local
+.env.*.local
