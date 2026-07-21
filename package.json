@@ -14,7 +14,7 @@
     "install:all": "npm install && cd server && npm install"
   },
   "dependencies": {
-    "@material/web": "^2.4.1",
+    "@material/web": "^2.5.0",
     "@varlet/ui": "^3.13.1",
     "marked": "^18.0.6",
     "vue": "^3.5.26"

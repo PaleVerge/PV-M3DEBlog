@@ -229,19 +229,21 @@ md-primary-tab {
 /* ===== MD3 List ===== */
 md-list {
   padding: 0;
+  background: transparent;
 }
 
 md-list-item {
   --md-list-item-container-shape: var(--m3-shape-medium);
-  --md-list-item-container-color: transparent;
+  --md-list-item-container-color: var(--md-sys-color-primary-container);
   margin: 4px 8px;
   transition: background-color 0.2s ease;
   border-radius: var(--m3-shape-medium);
-  background: transparent !important;
+  background: var(--md-sys-color-primary-container) !important;
 }
 
 md-list-item:hover {
-  background-color: var(--md-sys-color-surface-container-high) !important;
+  background-color: var(--md-sys-color-primary-container) !important;
+  filter: brightness(0.95);
 }
 
 /* ===== MD3 Cards ===== */
@@ -268,6 +270,15 @@ md-divider {
 md-outlined-text-field {
   --md-outlined-text-field-container-shape: var(--m3-shape-small);
   --md-outlined-text-field-focus-outline-color: var(--md-sys-color-primary);
+  --md-outlined-text-field-container-color: var(--md-sys-color-surface-container);
+  --md-outlined-text-field-label-text-color: var(--md-sys-color-on-surface-variant);
+  --md-outlined-text-field-input-text-color: var(--md-sys-color-on-surface);
+  --md-outlined-text-field-hover-label-text-color: var(--md-sys-color-on-surface);
+  --md-outlined-text-field-hover-outline-color: var(--md-sys-color-outline-variant);
+  --md-outlined-text-field-focus-label-text-color: var(--md-sys-color-primary);
+  --md-outlined-text-field-focus-outline-color: var(--md-sys-color-primary);
+  --md-outlined-text-field-caret-color: var(--md-sys-color-on-surface);
+  --md-outlined-text-field-leading-icon-color: var(--md-sys-color-on-surface-variant);
 }
 
 md-filled-text-field {

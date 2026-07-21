@@ -34,5 +34,11 @@ function onInput(e) {
 <style scoped>
 .search-container {
   width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.search-container md-outlined-text-field {
+  width: 100%;
 }
 </style>

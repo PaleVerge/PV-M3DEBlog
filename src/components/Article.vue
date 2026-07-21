@@ -361,10 +361,20 @@ function submitReply(commentId) {
 }
 .search-bar {
   margin: 8px 0 12px;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
+
+@media (max-width: 600px) {
+  .search-bar {
+    padding: 0 8px;
+  }
+}
+
 .search-bar md-outlined-text-field {
   width: 100%;
-  --md-outlined-text-field-container-shape: var(--m3-shape-full);
+  --md-outlined-text-field-container-shape: var(--m3-shape-small);
 }
 .back-btn {
   margin-bottom: 8px;

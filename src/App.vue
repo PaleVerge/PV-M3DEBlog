@@ -20,6 +20,10 @@
           <md-icon>chat</md-icon>
           <span>留言板</span>
         </div>
+        <div class="fab-wide" @click="showProject = true">
+          <md-icon>code</md-icon>
+          <span>我的项目</span>
+        </div>
         <div class="fab-wide" @click="goToSettings">
           <md-icon>settings</md-icon>
           <span>设置</span>
@@ -36,6 +40,7 @@
 import { ref, watch, onMounted, onUnmounted } from 'vue'
 import Navbar from './components/Navbar.vue'
 import DesktopLayout from './components/DesktopLayout.vue'
+import MyProject from './components/MyProject.vue'
 import { useArticleState } from './composables/useArticleState'
 import '@material/web/fab/fab.js'
 import '@material/web/icon/icon.js'
@@ -53,6 +58,7 @@ const { selectedArticle } = useArticleState()
 
 const isMobile = ref(true)
 const fabExpanded = ref(false)
+const showProject = ref(false)
 
 function checkScreen() {
   isMobile.value = window.innerWidth <= 1024

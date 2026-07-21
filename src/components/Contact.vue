@@ -15,13 +15,13 @@
       <md-list-item type="link" @click="copyQQ">
         <div slot="headline">QQ</div>
         <div slot="supporting-text">574746791</div>
-        <md-icon slot="end">content_copy</md-icon>
+        <md-icon slot="end">forum</md-icon>
       </md-list-item>
       <Divider />
       <md-list-item type="link" @click="copyWeChat">
         <div slot="headline">微信</div>
         <div slot="supporting-text">distandce</div>
-        <md-icon slot="end">content_copy</md-icon>
+        <md-icon slot="end">sms</md-icon>
       </md-list-item>
       <Divider />
       <md-list-item type="link" href="https://x.com/qing1435" target="_blank">
@@ -109,11 +109,13 @@ function copyWeChat() {
 .toast-content {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 0;
-  font-size: 0.9rem;
+  gap: 12px;
+  padding: 12px 8px;
+  font-size: 1rem;
+  line-height: 1;
 }
 .toast-icon {
   color: var(--md-sys-color-primary);
+  font-size: 24px;
 }
 </style>
