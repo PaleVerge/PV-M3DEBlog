@@ -46,6 +46,26 @@
                 <md-icon :style="isLiked(msg) ? 'color:var(--md-sys-color-primary)' : ''">{{ isLiked(msg) ? 'favorite' : 'favorite_border' }}</md-icon>
               </md-icon-button>
               <span class="like-count">{{ msg.likes || 0 }}</span>
+              <md-icon-button @click="toggleReply(msg)" class="action-btn reply-btn">
+                <md-icon>reply</md-icon>
+              </md-icon-button>
+              <span class="reply-count">{{ (msg.replies || []).length }}</span>
+            </div>
+            <div v-if="replyingTo === msg.id" class="reply-form">
+              <md-outlined-text-field label="回复内容" :value="replyContent" @input="replyContent = $event.target.value" placeholder="写点回复..." type="textarea" rows="2"></md-outlined-text-field>
+              <div class="edit-actions">
+                <md-filled-tonal-button @click="cancelReply">取消</md-filled-tonal-button>
+                <md-filled-button @click="submitReply(msg.id)" :disabled="!replyContent">回复</md-filled-button>
+              </div>
+            </div>
+            <div v-if="msg.replies && msg.replies.length > 0" class="reply-list">
+              <div v-for="reply in msg.replies" :key="reply.id" class="reply-item">
+                <div class="reply-header">
+                  <span class="reply-nickname">{{ reply.nickname }}</span>
+                  <span class="reply-time">{{ reply.time }}</span>
+                </div>
+                <p class="reply-content">{{ reply.content }}</p>
+              </div>
             </div>
             <Divider />
           </div>
@@ -149,9 +169,9 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import Divider from './Divider.vue'
-import { getMessages, saveMessages, addMessage, isAdminAPI, deleteMessageAPI } from '../api/index'
+import { getMessages, addMessage, isAdminAPI, deleteMessageAPI, toggleMessageLikeAPI, addMessageReplyAPI, updateMessageAPI } from '../api/index'
 
 const props = defineProps({
   compact: { type: Boolean, default: false }
@@ -189,6 +209,13 @@ onMounted(async () => {
 
 onUnmounted(() => window.removeEventListener('close-all-dialogs', closeDialog))
 
+watch(showDialog, async (open) => {
+  if (open) {
+    isAdmin.value = await isAdminAPI()
+    currentNickname.value = sessionStorage.getItem(NICKNAME_KEY) || currentNickname.value
+  }
+})
+
 const sortedMessages = computed(() => {
   const list = [...messages.value]
   if (sortBy.value === 'hot') list.sort((a, b) => (b.likes || 0) - (a.likes || 0))
@@ -218,8 +245,13 @@ function cancelEdit() { editingId.value = null; editContent.value = '' }
 
 async function saveEdit(id) {
   if (!editContent.value) return
-  const msg = messages.value.find(m => m.id === id)
-  if (msg) { msg.content = editContent.value; msg.time = new Date().toLocaleString() + ' (已编辑)'; await saveMessages(messages.value) }
+  try {
+    const updated = await updateMessageAPI(id, editContent.value)
+    const msg = messages.value.find(m => m.id === id)
+    if (msg) Object.assign(msg, updated)
+  } catch (e) {
+    alert('保存失败')
+  }
   editingId.value = null; editContent.value = ''
 }
 
@@ -235,13 +267,18 @@ async function deleteMessage(id) {
 function isLiked(msg) { return (msg.likedBy || []).includes(currentNickname.value) }
 
 async function toggleLike(msg) {
-  if (!currentNickname.value) { alert('请先输入昵称'); return }
-  if (!msg.likedBy) msg.likedBy = []
-  if (!msg.likes) msg.likes = 0
-  const idx = msg.likedBy.indexOf(currentNickname.value)
-  if (idx === -1) { msg.likedBy.push(currentNickname.value); msg.likes++ }
-  else { msg.likedBy.splice(idx, 1); msg.likes-- }
-  await saveMessages(messages.value)
+  const nick = currentNickname.value || nickname.value
+  if (!nick) { alert('请先输入昵称'); return }
+  try {
+    const updated = await toggleMessageLikeAPI(msg.id, nick)
+    Object.assign(msg, updated)
+    if (!currentNickname.value && nickname.value) {
+      currentNickname.value = nickname.value
+      sessionStorage.setItem(NICKNAME_KEY, nickname.value)
+    }
+  } catch (e) {
+    alert('点赞失败')
+  }
 }
 
 function toggleReply(msg) { replyingTo.value = replyingTo.value === msg.id ? null : msg.id; replyContent.value = '' }
@@ -249,12 +286,18 @@ function cancelReply() { replyingTo.value = null; replyContent.value = '' }
 
 async function submitReply(msgId) {
   if (!replyContent.value) return
-  if (!currentNickname.value) { alert('请先输入昵称'); return }
-  const msg = messages.value.find(m => m.id === msgId)
-  if (msg) {
-    if (!msg.replies) msg.replies = []
-    msg.replies.push({ id: generateId(), nickname: currentNickname.value, content: replyContent.value, time: new Date().toLocaleString() })
-    await saveMessages(messages.value)
+  const nick = currentNickname.value || nickname.value
+  if (!nick) { alert('请先输入昵称'); return }
+  try {
+    const updated = await addMessageReplyAPI(msgId, nick, replyContent.value)
+    const msg = messages.value.find(m => m.id === msgId)
+    if (msg) Object.assign(msg, updated)
+    if (!currentNickname.value && nickname.value) {
+      currentNickname.value = nickname.value
+      sessionStorage.setItem(NICKNAME_KEY, nickname.value)
+    }
+  } catch (e) {
+    alert('回复失败')
   }
   replyingTo.value = null; replyContent.value = ''
 }

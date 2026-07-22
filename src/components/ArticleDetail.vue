@@ -11,7 +11,11 @@
     </div>
 
     <div class="article-scroll">
-      <article v-html="renderedArticle" class="markdown-body two-col"></article>
+      <div v-if="loading" class="article-loading">
+        <md-circular-progress indeterminate></md-circular-progress>
+        <span class="loading-text">加载中...</span>
+      </div>
+      <article v-else v-html="renderedArticle" class="markdown-body two-col"></article>
     </div>
 
     <div class="fab-group">
@@ -72,6 +76,7 @@ import { useArticleState } from '../composables/useArticleState'
 
 import '@material/web/fab/fab.js'
 import '@material/web/icon/icon.js'
+import '@material/web/progress/circular-progress.js'
 
 const { selectedArticle, clearArticle, setArticleRaw, getArticleRaw } = useArticleState()
 
@@ -82,6 +87,7 @@ const commentNickname = ref('')
 const commentContent = ref('')
 const isAdmin = ref(false)
 const showComments = ref(false)
+const loading = ref(false)
 const NICKNAME_KEY = 'm3eblog_nickname'
 
 function closeDialogs() { showComments.value = false }
@@ -97,8 +103,13 @@ const renderedArticle = computed(() => {
 
 watch(selectedArticle, async (article) => {
   if (article) {
-    await loadArticleContent(article)
-    await loadArticleData(article.slug)
+    loading.value = true
+    try {
+      await loadArticleContent(article)
+      await loadArticleData(article.slug)
+    } finally {
+      loading.value = false
+    }
   }
 }, { immediate: true })
 
@@ -110,6 +121,10 @@ onMounted(async () => {
 })
 
 onUnmounted(() => window.removeEventListener('close-all-dialogs', closeDialogs))
+
+watch(showComments, async (open) => {
+  if (open) isAdmin.value = await isAdminAPI()
+})
 
 async function loadArticleContent(article) {
   const slug = article.slug
@@ -241,6 +256,26 @@ async function deleteComment(commentId) {
 .markdown-body :deep(a:hover) { text-decoration: underline; }
 .markdown-body :deep(p) { margin: 6px 0; }
 .markdown-body :deep(img) { max-width: 100%; break-inside: avoid; }
+
+.article-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  height: 100%;
+  min-height: 200px;
+}
+
+.loading-text {
+  font-size: 0.85rem;
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+md-circular-progress {
+  --md-circular-progress-size: 48px;
+  --md-circular-progress-active-indicator-color: var(--md-sys-color-primary);
+}
 
 .fab-group {
   position: fixed;

@@ -86,6 +86,42 @@ export async function deleteMessageAPI(id) {
   }
 }
 
+export async function toggleMessageLikeAPI(id, nickname) {
+  try {
+    return await request(`/messages/${id}/like`, {
+      method: 'POST',
+      body: JSON.stringify({ nickname }),
+    });
+  } catch (error) {
+    console.error('Failed to like message:', error);
+    throw error;
+  }
+}
+
+export async function addMessageReplyAPI(id, nickname, content) {
+  try {
+    return await request(`/messages/${id}/reply`, {
+      method: 'POST',
+      body: JSON.stringify({ nickname, content }),
+    });
+  } catch (error) {
+    console.error('Failed to reply message:', error);
+    throw error;
+  }
+}
+
+export async function updateMessageAPI(id, content) {
+  try {
+    return await request(`/messages/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify({ content }),
+    });
+  } catch (error) {
+    console.error('Failed to update message:', error);
+    throw error;
+  }
+}
+
 export async function deleteArticleCommentAPI(slug, commentId) {
   try {
     return await request(`/articles/${slug}/comments/${commentId}`, { method: 'DELETE' });
