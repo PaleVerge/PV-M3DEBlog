@@ -22,12 +22,16 @@ function handleNavigate(e: CustomEvent) {
   else if (target === 'articles') activeIndex.value = 1
 }
 
+function closeDialogs() { showSettings.value = false }
+
 onMounted(() => {
   window.addEventListener('navigate-to', handleNavigate as EventListener)
+  window.addEventListener('close-all-dialogs', closeDialogs)
 })
 
 onUnmounted(() => {
   window.removeEventListener('navigate-to', handleNavigate as EventListener)
+  window.removeEventListener('close-all-dialogs', closeDialogs)
 })
 
 const tabs = [Home, Article, Friend, Contact, Messages]

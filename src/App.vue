@@ -20,7 +20,7 @@
           <md-icon>chat</md-icon>
           <span>留言板</span>
         </div>
-        <div class="fab-wide" @click="showProject = true">
+        <div class="fab-wide" @click="goToProject">
           <md-icon>code</md-icon>
           <span>我的项目</span>
         </div>
@@ -33,11 +33,13 @@
         </md-fab>
       </template>
     </div>
+
+    <MyProject ref="projectRef" :hide-button="true" />
   </div>
 </template>
 
 <script lang="ts" setup>
-import { ref, watch, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import Navbar from './components/Navbar.vue'
 import DesktopLayout from './components/DesktopLayout.vue'
 import MyProject from './components/MyProject.vue'
@@ -58,17 +60,24 @@ const { selectedArticle } = useArticleState()
 
 const isMobile = ref(true)
 const fabExpanded = ref(false)
-const showProject = ref(false)
+const projectRef = ref<InstanceType<typeof MyProject> | null>(null)
+let resizeTimer: ReturnType<typeof setTimeout> | null = null
 
 function checkScreen() {
-  isMobile.value = window.innerWidth <= 1024
+  if (resizeTimer) return
+  resizeTimer = setTimeout(() => {
+    const mobile = window.innerWidth <= 1024
+      if (mobile !== isMobile.value) {
+        const wasMobile = isMobile.value
+        isMobile.value = mobile
+        window.dispatchEvent(new CustomEvent('close-all-dialogs'))
+        if (!wasMobile && mobile && selectedArticle.value) {
+          window.dispatchEvent(new CustomEvent('navigate-to', { detail: 'articles' }))
+        }
+      }
+    resizeTimer = null
+  }, 150)
 }
-
-watch(isMobile, (mobile, prev) => {
-  if (mobile && !prev && selectedArticle.value) {
-    window.dispatchEvent(new CustomEvent('navigate-to', { detail: 'articles' }))
-  }
-})
 
 onMounted(() => {
   checkScreen()
@@ -77,6 +86,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   window.removeEventListener('resize', checkScreen)
+  if (resizeTimer) clearTimeout(resizeTimer)
 })
 
 function scrollToTop() {
@@ -91,6 +101,11 @@ function goToMessages() {
 
 function goToSettings() {
   window.dispatchEvent(new CustomEvent('navigate-to', { detail: 'settings' }))
+  fabExpanded.value = false
+}
+
+function goToProject() {
+  projectRef.value?.openProject()
   fabExpanded.value = false
 }
 </script>

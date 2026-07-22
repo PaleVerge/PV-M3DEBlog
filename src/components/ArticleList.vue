@@ -14,14 +14,26 @@
       </div>
     </div>
     <Divider />
-    <div v-if="filteredArticles.length === 0" class="empty-state">
+    <div v-if="filteredArticles.length === 0 && !showProjectResult" class="empty-state">
       <p>暂无文章</p>
     </div>
     <md-list v-else>
       <md-list-item
+        v-if="showProjectResult"
+        @click="emit('selectProject')"
+        class="article-item project-result"
+      >
+        <div slot="headline">
+          <md-icon class="project-result-icon">code</md-icon>
+          我的项目
+        </div>
+        <div slot="supporting-text">点击查看项目详情</div>
+        <md-icon slot="end">chevron_right</md-icon>
+      </md-list-item>
+      <md-list-item
         v-for="article in pagedArticles"
         :key="article.slug"
-        @click="$emit('select', article)"
+        @click="emit('select', article)"
         class="article-item"
       >
         <div slot="headline">{{ article.title }}</div>
@@ -59,12 +71,13 @@ const props = defineProps({
   }
 })
 
-defineEmits(['select'])
+const emit = defineEmits(['select', 'selectProject'])
 
 const articleSort = ref('time')
 const articlePage = ref(1)
 const articlesPerPage = 6
 const articles = ref([])
+const projectHeadings = ref([])
 
 onMounted(async () => {
   const list = [...articlesMeta]
@@ -79,6 +92,13 @@ onMounted(async () => {
   }
   list.sort((a, b) => (b.date > a.date ? 1 : -1))
   articles.value = list
+
+  try {
+    const res = await fetch('/content/myproject.md')
+    const md = await res.text()
+    const headings = md.match(/^#{1,3}\s+(.+)$/gm) || []
+    projectHeadings.value = headings.map(h => h.replace(/^#+\s+/, '').trim())
+  } catch {}
 })
 
 const filteredArticles = computed(() => {
@@ -90,6 +110,13 @@ const filteredArticles = computed(() => {
   if (articleSort.value === 'hot') list.sort((a, b) => b.hot - a.hot)
   else list.sort((a, b) => (b.date > a.date ? 1 : -1))
   return list
+})
+
+const showProjectResult = computed(() => {
+  if (!props.searchQuery) return false
+  const q = props.searchQuery.toLowerCase()
+  if ('我的项目'.includes(q)) return true
+  return projectHeadings.value.some(h => h.toLowerCase().includes(q))
 })
 
 watch([() => props.searchQuery, articleSort], () => {
@@ -129,6 +156,8 @@ const totalArticlePages = computed(() => Math.ceil(filteredArticles.value.length
   font-size: 0.75rem;
 }
 .article-item { cursor: pointer; }
+.project-result-icon { font-size: 18px; vertical-align: middle; margin-right: 4px; color: var(--md-sys-color-primary); }
+.project-result { --md-list-item-leading-space: 8px; }
 .empty-state { text-align: center; color: var(--md-sys-color-on-surface-variant); padding: 24px; }
 .pagination {
   display: flex;

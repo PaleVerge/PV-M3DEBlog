@@ -1,64 +1,64 @@
 <template>
-  <div class="project-btn" @click="openProject">
+  <div v-if="!hideButton" class="project-btn" @click="openProject">
     <div class="project-label">
       <md-icon class="project-icon">code</md-icon>
       <span>我的项目</span>
     </div>
   </div>
 
-  <md-dialog :open="showDialog" @close="showDialog = false; emit('update:open', false)" class="project-dialog">
+  <md-dialog :open="showDialog" @close="showDialog = false" class="project-dialog">
     <div slot="headline">我的项目</div>
     <div slot="content" class="dialog-body" v-html="renderedContent"></div>
     <div slot="actions">
-      <md-filled-button @click="showDialog = false; emit('update:open', false)">关闭</md-filled-button>
+      <md-filled-button @click="showDialog = false">关闭</md-filled-button>
     </div>
   </md-dialog>
 </template>
 
 <script setup>
-import { ref, watch, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { marked } from 'marked'
 
-const props = defineProps({
-  open: { type: Boolean, default: false }
-})
+defineProps({ hideButton: { type: Boolean, default: false } })
 
-const emit = defineEmits(['update:open'])
 const showDialog = ref(false)
 const renderedContent = ref('')
 
-watch(() => props.open, (val) => {
-  if (val) {
-    showDialog.value = true
-    emit('update:open', false)
+function closeDialog() { showDialog.value = false }
+
+onMounted(async () => {
+  window.addEventListener('close-all-dialogs', closeDialog)
+  try {
+    const res = await fetch('/content/myproject.md')
+    if (!res.ok) { renderedContent.value = '<p>文件加载失败</p>'; return }
+    const md = await res.text()
+    let html = marked.parse(md)
+    html = html.replace(/<a /g, '<a target="_blank" rel="noopener noreferrer" ')
+    renderedContent.value = html
+  } catch {
+    renderedContent.value = '<p>加载失败，请检查网络或文件是否存在</p>'
   }
 })
 
-onMounted(async () => {
-  try {
-    const res = await fetch('/content/myproject.md')
-    const md = await res.text()
-    renderedContent.value = marked.parse(md)
-  } catch {
-    renderedContent.value = '<p>加载中...</p>'
-  }
-})
+onUnmounted(() => window.removeEventListener('close-all-dialogs', closeDialog))
 
 function openProject() {
   showDialog.value = true
 }
+
+defineExpose({ openProject })
 </script>
 
 <style scoped>
 .project-btn {
   display: flex;
   align-items: center;
-  padding: 0 4px;
+  justify-content: space-between;
+  flex: 1;
+  padding: 0 12px;
   cursor: pointer;
   border-radius: var(--m3-shape-medium);
   transition: background-color 0.2s;
-  height: 100%;
-  width: 100%;
 }
 
 .project-btn:hover {
@@ -104,6 +104,15 @@ function openProject() {
 
 .dialog-body :deep(p) {
   margin: 6px 0;
+}
+
+.dialog-body :deep(a) {
+  color: var(--md-sys-color-primary);
+  text-decoration: none;
+}
+
+.dialog-body :deep(a:hover) {
+  text-decoration: underline;
 }
 
 .dialog-body :deep(ul) {

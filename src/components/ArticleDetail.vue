@@ -64,7 +64,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { marked } from 'marked'
 import Divider from './Divider.vue'
 import { getArticleLikes, toggleArticleLikeAPI, getArticleComments, addArticleComment, isAdminAPI, deleteArticleCommentAPI } from '../api/index'
@@ -84,6 +84,8 @@ const isAdmin = ref(false)
 const showComments = ref(false)
 const NICKNAME_KEY = 'm3eblog_nickname'
 
+function closeDialogs() { showComments.value = false }
+
 const mdModules = import.meta.glob('/articles/*.md', { query: '?raw', import: 'default' })
 
 const renderedArticle = computed(() => {
@@ -101,10 +103,13 @@ watch(selectedArticle, async (article) => {
 }, { immediate: true })
 
 onMounted(async () => {
+  window.addEventListener('close-all-dialogs', closeDialogs)
   const savedNickname = sessionStorage.getItem(NICKNAME_KEY)
   if (savedNickname) commentNickname.value = savedNickname
   isAdmin.value = await isAdminAPI()
 })
+
+onUnmounted(() => window.removeEventListener('close-all-dialogs', closeDialogs))
 
 async function loadArticleContent(article) {
   const slug = article.slug

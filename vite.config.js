@@ -52,6 +52,16 @@ function articleMetaPlugin() {
         
         return `export default ${JSON.stringify(metaList)}`
       }
+    },
+    configServer(server) {
+      const articlesDir = path.resolve(__dirname, 'articles')
+      server.watcher.add(articlesDir)
+      server.watcher.on('all', (event, filePath) => {
+        if (filePath.startsWith(articlesDir) && filePath.endsWith('.md')) {
+          const mod = server.moduleGraph.getModuleById(resolvedVirtualModuleId)
+          if (mod) server.moduleGraph.invalidateModule(mod)
+        }
+      })
     }
   }
 }

@@ -26,7 +26,7 @@
       </aside>
 
       <section class="content-main">
-        <ArticleList :searchQuery="searchQuery" @select="selectArticle" />
+        <ArticleList :searchQuery="searchQuery" @select="selectArticle" @selectProject="projectRef?.openProject()" />
       </section>
 
       <aside class="sidebar-right">
@@ -37,7 +37,7 @@
           <Contact />
         </div>
         <div class="panel panel-compact">
-          <MyProject />
+          <MyProject ref="projectRef" />
         </div>
       </aside>
     </main>
@@ -57,7 +57,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { marked } from 'marked'
 import SearchBar from './SearchBar.vue'
 import ArticleList from './ArticleList.vue'
@@ -74,8 +74,12 @@ const { selectedArticle, selectArticle } = useArticleState()
 const searchQuery = ref('')
 const showSettings = ref(false)
 const homeContent = ref('')
+const projectRef = ref(null)
+
+function closeDialogs() { showSettings.value = false }
 
 onMounted(async () => {
+  window.addEventListener('close-all-dialogs', closeDialogs)
   try {
     const res = await fetch('/content/home.md')
     const md = await res.text()
@@ -88,6 +92,8 @@ onMounted(async () => {
     homeContent.value = '<p>加载中...</p>'
   }
 })
+
+onUnmounted(() => window.removeEventListener('close-all-dialogs', closeDialogs))
 </script>
 
 <style scoped>
@@ -238,8 +244,9 @@ onMounted(async () => {
 }
 
 .sidebar-right .panel-compact {
-  padding: 0;
+  padding: 4px 12px;
   min-height: 56px;
+  display: flex;
 }
 
 .panel {

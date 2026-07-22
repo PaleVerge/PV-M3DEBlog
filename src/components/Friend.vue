@@ -50,7 +50,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import Divider from './Divider.vue'
 
 defineProps({
@@ -59,6 +59,10 @@ defineProps({
 
 const showDialog = ref(false)
 const friends = ref([])
+
+function closeDialog() { showDialog.value = false }
+onMounted(() => window.addEventListener('close-all-dialogs', closeDialog))
+onUnmounted(() => window.removeEventListener('close-all-dialogs', closeDialog))
 </script>
 
 <style scoped>
@@ -66,7 +70,8 @@ const friends = ref([])
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 4px;
+  flex: 1;
+  padding: 0 12px;
   cursor: pointer;
   border-radius: var(--m3-shape-medium);
   transition: background-color 0.2s;

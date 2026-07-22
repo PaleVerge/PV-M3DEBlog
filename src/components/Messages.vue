@@ -149,7 +149,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import Divider from './Divider.vue'
 import { getMessages, saveMessages, addMessage, isAdminAPI, deleteMessageAPI } from '../api/index'
 
@@ -174,7 +174,10 @@ const sortBy = ref('time')
 const replyingTo = ref(null)
 const replyContent = ref('')
 
+function closeDialog() { showDialog.value = false }
+
 onMounted(async () => {
+  window.addEventListener('close-all-dialogs', closeDialog)
   messages.value = await getMessages()
   const savedNickname = sessionStorage.getItem(NICKNAME_KEY)
   if (savedNickname) {
@@ -183,6 +186,8 @@ onMounted(async () => {
   }
   isAdmin.value = await isAdminAPI()
 })
+
+onUnmounted(() => window.removeEventListener('close-all-dialogs', closeDialog))
 
 const sortedMessages = computed(() => {
   const list = [...messages.value]
@@ -274,7 +279,9 @@ async function submitReply(msgId) {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 4px;
+  flex: 1;
+  align-self: stretch;
+  padding: 0 12px;
   cursor: pointer;
   border-radius: var(--m3-shape-medium);
   transition: background-color 0.2s;
@@ -294,7 +301,7 @@ async function submitReply(msgId) {
   min-height: 120px;
 }
 
-.messages-container { max-width: 600px; margin: 0 auto; padding: 8px 0; }
+.messages-container { max-width: 600px; margin: 0 auto; padding: 8px 10px; }
 .message-form { display: flex; flex-direction: column; gap: 12px; margin-bottom: 12px; }
 .sort-bar { display: flex; align-items: center; gap: 8px; padding: 8px 0; }
 .sort-label { color: var(--md-sys-color-on-surface-variant); font-size: 0.875rem; }

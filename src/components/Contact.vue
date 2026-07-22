@@ -50,11 +50,15 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import Divider from './Divider.vue'
 
 const showToast = ref(false)
 const toastMsg = ref('')
+
+function closeDialog() { showToast.value = false }
+onMounted(() => window.addEventListener('close-all-dialogs', closeDialog))
+onUnmounted(() => window.removeEventListener('close-all-dialogs', closeDialog))
 
 function showCopyToast(msg) {
   toastMsg.value = msg
