@@ -13,6 +13,12 @@
 * 联系作者
 * 推文页面
 
+## 使用方式
+* 配置项目后，article文件夹内放入md文件，自动转化为文章加入文章列表，自动渲染。
+
+* 主页左侧区域为content/home.md渲染
+
+* 我的项目区域为content/myproject.md渲染
 ## 项目配置
 
 ### 前端
@@ -21,13 +27,10 @@
 npm install
 ```
 
-#### Compile and Hot-Reload for Development
-
 ```sh
 npm run dev
 ```
 
-#### Compile and Minify for Production
 
 ```sh
 npm run build
