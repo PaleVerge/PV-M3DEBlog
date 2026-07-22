@@ -102,7 +102,7 @@ onUnmounted(() => window.removeEventListener('close-all-dialogs', closeDialog))
 .friend-full {
   max-width: 600px;
   margin: 0 auto;
-  padding: 8px 0;
+  padding: 8px 10px;
 }
 .friend-header {
   display: flex;

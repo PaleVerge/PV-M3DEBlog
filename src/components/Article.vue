@@ -340,7 +340,7 @@ function submitReply(commentId) {
 .article-container {
   max-width: 600px;
   margin: 0 auto;
-  padding: 8px 0;
+  padding: 8px 10px;
 }
 .section-header {
   display: flex;
